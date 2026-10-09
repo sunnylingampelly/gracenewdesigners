@@ -1,0 +1,204 @@
+@import "tailwindcss";
+
+/*
+ * Grace New Designers — design tokens
+ * "Modern Indian Couture, Timeless Grace."
+ * Blue is the signature, used with restraint; ivory and white carry the canvas.
+ */
+@theme {
+  /* Brand colour */
+  --color-midnight: #081b33;
+  --color-navy: #102e55;
+  --color-royal: #285a87;
+  --color-sky: #79b7df;
+  --color-ice: #eaf5fb;
+  --color-ivory: #faf9f6;
+  --color-paper: #ffffff;
+  --color-ink: #172638;
+  --color-muted: #5f6672; /* #6B7280 darkened slightly for AA on ivory */
+  --color-line: #e4e1da;
+  --color-line-strong: #cfcac0;
+  --color-gold: #b08a3e;
+  --color-success: #1f6b4f;
+  --color-danger: #a12a2a;
+  --color-warning: #8a5a00;
+
+  /* Typography */
+  --font-display: var(--font-cormorant), "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-manrope), "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --text-eyebrow: 0.6875rem;
+  --text-eyebrow--letter-spacing: 0.24em;
+  --text-display-sm: clamp(2rem, 1.6rem + 1.6vw, 2.75rem);
+  --text-display-sm--line-height: 1.1;
+  --text-display: clamp(2.5rem, 1.8rem + 3vw, 4.25rem);
+  --text-display--line-height: 1.04;
+  --text-display-lg: clamp(3rem, 2rem + 5vw, 6.5rem);
+  --text-display-lg--line-height: 0.98;
+
+  --tracking-luxe: 0.18em;
+  --tracking-wide-ui: 0.08em;
+
+  /* Spacing rhythm for editorial sections */
+  --spacing-section: clamp(4rem, 3rem + 5vw, 9rem);
+  --spacing-gutter: clamp(1rem, 0.6rem + 2vw, 3rem);
+
+  /* Containers */
+  --container-editorial: 90rem;
+  --container-prose: 42rem;
+
+  /* Radius — couture is mostly square; soft only for interactive chrome */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+
+  /* Shadows: barely-there */
+  --shadow-soft: 0 1px 2px rgb(8 27 51 / 0.04), 0 8px 24px -12px rgb(8 27 51 / 0.12);
+  --shadow-lift: 0 20px 48px -24px rgb(8 27 51 / 0.28);
+
+  /* Motion */
+  --ease-luxe: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --duration-fast: 160ms;
+  --duration-base: 320ms;
+  --duration-slow: 700ms;
+
+  /* Breakpoints (Tailwind defaults kept; xs added for 390px+ phones) */
+  --breakpoint-xs: 24rem;
+  --breakpoint-3xl: 112rem;
+
+  --animate-fade-up: fade-up var(--duration-slow) var(--ease-luxe) both;
+  --animate-fade-in: fade-in var(--duration-base) var(--ease-luxe) both;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-ivory);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "tnum" 0;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-ice);
+    color: var(--color-midnight);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-royal);
+    outline-offset: 3px;
+  }
+
+  [data-theme="dark-section"] :focus-visible {
+    outline-color: var(--color-sky);
+  }
+
+  img {
+    color: transparent; /* hide alt text flash while loading */
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--text-eyebrow--letter-spacing);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  .container-editorial {
+    margin-inline: auto;
+    width: 100%;
+    max-width: var(--container-editorial);
+    padding-inline: var(--spacing-gutter);
+  }
+
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size var(--duration-base) var(--ease-luxe);
+  }
+  .link-underline:hover,
+  .link-underline:focus-visible {
+    background-size: 100% 1px;
+  }
+
+  /* Rich text from the CMS / product descriptions (already sanitized server-side). */
+  .prose-couture {
+    max-width: var(--container-prose);
+    font-size: 1rem;
+    line-height: 1.85;
+    color: var(--color-ink);
+  }
+  .prose-couture h2 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    line-height: 1.15;
+    margin: 2.5rem 0 1rem;
+  }
+  .prose-couture h3 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    margin: 2rem 0 0.75rem;
+  }
+  .prose-couture p { margin: 0 0 1.25rem; }
+  .prose-couture ul, .prose-couture ol { margin: 0 0 1.25rem 1.25rem; }
+  .prose-couture ul { list-style: disc; }
+  .prose-couture ol { list-style: decimal; }
+  .prose-couture li { margin-bottom: 0.4rem; padding-left: 0.25rem; }
+  .prose-couture a { color: var(--color-royal); text-decoration: underline; text-underline-offset: 3px; }
+  .prose-couture blockquote {
+    border-left: 1px solid var(--color-gold);
+    padding-left: 1.25rem;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-style: italic;
+  }
+  .prose-couture hr { border-color: var(--color-line); margin: 2.5rem 0; }
+
+  .skeleton {
+    background: linear-gradient(90deg, #efece6 0%, #f6f4ef 50%, #efece6 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+
+  .scrollbar-none { scrollbar-width: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+}

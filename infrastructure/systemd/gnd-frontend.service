@@ -1,0 +1,16 @@
+[Unit]
+Description=Grace New Designers storefront (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/gnd/frontend
+Environment=NODE_ENV=production
+EnvironmentFile=/var/www/gnd/frontend/.env.production
+ExecStart=/usr/bin/npm run start -- -p 3000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
