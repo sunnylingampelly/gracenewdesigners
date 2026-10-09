@@ -74,12 +74,12 @@ export function Header({ items, settings, secondary }: Props) {
         onMouseLeave={scheduleClose}
       >
         <div className="container-editorial">
-          <div className={cn("grid grid-cols-[1fr_auto_1fr] items-center transition-[height] duration-300", scrolled ? "h-16" : "h-16 lg:h-20")}>
+          <div className={cn("grid grid-cols-[1fr_auto_1fr] items-center transition-[height] duration-300", scrolled ? "h-14 lg:h-16" : "h-14 lg:h-20")}>
             {/* Left: mobile menu / desktop search */}
             <div className="flex items-center gap-1">
               <button
                 type="button"
-                className="-ml-2 inline-flex h-11 w-11 items-center justify-center lg:hidden"
+                className="-ml-2 inline-flex h-11 w-11 items-center justify-center touch-target active:scale-95 lg:hidden"
                 aria-label="Open menu"
                 aria-expanded={mobileOpen}
                 onClick={() => setMobileOpen(true)}
@@ -96,21 +96,22 @@ export function Header({ items, settings, secondary }: Props) {
               </button>
             </div>
 
-            <Logo brandName={settings.brand_name} logo={settings.logo_light_bg ?? settings.logo_primary} mobileLogo={settings.logo_mobile} height={scrolled ? 34 : 42} />
+            <Logo brandName={settings.brand_name} logo={settings.logo_light_bg ?? settings.logo_primary} mobileLogo={settings.logo_mobile} height={scrolled ? 30 : 36} />
 
-            {/* Right: icons */}
+            {/* Right: icons - hidden on mobile since bottom nav handles these */}
             <div className="flex items-center justify-end gap-0.5 sm:gap-2">
               <Link href="/contact" className="hidden px-2 py-2 text-[0.8rem] tracking-[0.08em] text-muted transition-colors hover:text-ink xl:inline-block">
                 <span className="link-underline">Contact</span>
               </Link>
-              <button type="button" onClick={() => setSearchOpen(true)} className="inline-flex h-11 w-11 items-center justify-center lg:hidden" aria-label="Search">
+              {/* Desktop only - mobile uses bottom nav */}
+              <button type="button" onClick={() => setSearchOpen(true)} className="hidden h-11 w-11 items-center justify-center lg:inline-flex" aria-label="Search">
                 <Search className="h-5 w-5" strokeWidth={1.4} />
               </button>
-              <Link href="/wishlist" className="relative inline-flex h-11 w-11 items-center justify-center" aria-label={`Wishlist${hydrated && wishCount ? `, ${wishCount} saved` : ""}`}>
+              <Link href="/wishlist" className="relative hidden h-11 w-11 items-center justify-center lg:inline-flex" aria-label={`Wishlist${hydrated && wishCount ? `, ${wishCount} saved` : ""}`}>
                 <Heart className="h-5 w-5" strokeWidth={1.4} />
                 {hydrated && wishCount > 0 && <CountBadge value={wishCount} />}
               </Link>
-              <Link href="/bag" className="relative -mr-2 inline-flex h-11 w-11 items-center justify-center" aria-label={`Enquiry bag${hydrated && bagCount ? `, ${bagCount} items` : ""}`}>
+              <Link href="/bag" className="relative -mr-2 hidden h-11 w-11 items-center justify-center lg:inline-flex" aria-label={`Enquiry bag${hydrated && bagCount ? `, ${bagCount} items` : ""}`}>
                 <ShoppingBag className="h-5 w-5" strokeWidth={1.4} />
                 {hydrated && bagCount > 0 && <CountBadge value={bagCount} />}
               </Link>

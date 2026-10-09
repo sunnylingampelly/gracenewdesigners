@@ -5,3 +5,6 @@ Thumbs.db
 .vscode/
 .qodo/
 *.log
+
+# local database exports (contain dev/test data)
+/database-export/

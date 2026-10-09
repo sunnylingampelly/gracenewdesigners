@@ -83,6 +83,9 @@
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
     scroll-behavior: smooth;
+    /* Mobile-specific enhancements for native app feel */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   body {
@@ -92,6 +95,9 @@
     font-feature-settings: "ss01", "tnum" 0;
     -webkit-font-smoothing: antialiased;
     overflow-x: clip;
+    /* Enable momentum scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
   }
 
   ::selection {
@@ -201,4 +207,214 @@
 
   .scrollbar-none { scrollbar-width: none; }
   .scrollbar-none::-webkit-scrollbar { display: none; }
+
+  /* Mobile-specific UI enhancements for native app feel */
+  
+  /* Safe area insets for notched devices (iPhone X+, etc.) */
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .safe-area-inset-top {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+
+  /* Touch-friendly tap targets - minimum 44x44px (Apple HIG) */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Pull-to-refresh visual indicator */
+  @supports (overscroll-behavior: contain) {
+    .pull-to-refresh::before {
+      content: "";
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--color-line);
+      border-top-color: var(--color-royal);
+      opacity: 0;
+      transition: opacity var(--duration-fast);
+    }
+  }
+
+  /* Native-like scroll snap for carousels */
+  .scroll-snap-x {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .scroll-snap-start {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  /* Smooth active states for touch */
+  .touch-active:active {
+    transform: scale(0.97);
+    transition: transform 100ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Bottom sheet animations for mobile modals */
+  @keyframes slide-up-mobile {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-down-mobile {
+    from {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+  }
+
+  .animate-slide-up-mobile {
+    animation: slide-up-mobile 300ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  .animate-slide-down-mobile {
+    animation: slide-down-mobile 250ms cubic-bezier(0.4, 0, 1, 1);
+  }
+
+  /* iOS-style rubber band effect containment */
+  @supports (overscroll-behavior: contain) {
+    .overscroll-contain {
+      overscroll-behavior: contain;
+    }
+  }
+
+  /* Mobile navigation bar blur effect */
+  @supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+    .backdrop-blur-mobile {
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+    }
+  }
+
+  /* Prevent text selection on UI elements (more native feel) */
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Smooth height transitions for accordions/expandables */
+  .accordion-content {
+    overflow: hidden;
+    transition: height 300ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  /* Native app-like loading spinner */
+  @keyframes spin-smooth {
+    to { transform: rotate(360deg); }
+  }
+  .animate-spin-smooth {
+    animation: spin-smooth 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  /* Ripple effect for touch feedback */
+  @keyframes ripple {
+    0% {
+      transform: scale(0);
+      opacity: 0.6;
+    }
+    100% {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
+
+  .ripple-effect {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ripple-effect::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background: currentColor;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .ripple-effect:active::after {
+    animation: ripple 0.6s ease-out;
+  }
+
+  /* Floating action button shadow */
+  .fab-shadow {
+    box-shadow: 
+      0 3px 5px -1px rgba(8, 27, 51, 0.2),
+      0 6px 10px 0 rgba(8, 27, 51, 0.14),
+      0 1px 18px 0 rgba(8, 27, 51, 0.12);
+  }
+
+  /* iOS-style blur backgrounds */
+  @supports (backdrop-filter: blur(20px)) {
+    .ios-blur {
+      background: rgba(250, 249, 246, 0.85);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+    }
+  }
+
+  /* Smooth scroll with snap points */
+  .snap-scroll {
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 20px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .snap-scroll > * {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  /* Material Design elevation levels for mobile */
+  .elevation-1 { box-shadow: 0 2px 4px rgba(8, 27, 51, 0.08); }
+  .elevation-2 { box-shadow: 0 4px 8px rgba(8, 27, 51, 0.12); }
+  .elevation-3 { box-shadow: 0 8px 16px rgba(8, 27, 51, 0.16); }
+  .elevation-4 { box-shadow: 0 16px 24px rgba(8, 27, 51, 0.20); }
+
+  /* Card press effect for mobile */
+  .card-press:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 4px rgba(8, 27, 51, 0.06);
+    transition: all 100ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Sticky header with blur on scroll */
+  .sticky-blur {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(250, 249, 246, 0.9);
+    transition: background 200ms ease;
+  }
+
+  .sticky-blur.scrolled {
+    background: rgba(250, 249, 246, 0.95);
+    box-shadow: 0 1px 3px rgba(8, 27, 51, 0.05);
+  }
 }

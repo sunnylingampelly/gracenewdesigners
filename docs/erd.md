@@ -66,7 +66,7 @@ erDiagram
 | `users` | Staff accounts | unique `email`; `is_active`; encrypted `two_factor_secret`, hashed recovery codes |
 | `roles`, `permissions`, `permission_role`, `role_user` | RBAC | unique `slug`; `roles.requires_mfa` |
 | `media_assets` | Uploaded originals + renditions | `uuid` unique; `disk`, `path`; `renditions` JSON (derived paths); `checksum` (dedupe); `kind`; `alt_text`; `processing_status` |
-| `departments` | Women, Men, Bridal, Accessories… | unique `slug` |
+| `departments` | Men, Formal, Ethnic, Accessories… | unique `slug` |
 | `categories` | Nestable taxonomy | FK department (restrict), self FK `parent_id` (restrict); **unique `path`** (scopes slug to parent) |
 | `collections`, `occasions`, `tags` | Independent groupings | unique `slug`; collections have season window `starts_at/ends_at` |
 | `category_product` / `collection_product` / `occasion_product` / `product_tag` | Many-to-many | composite PKs; `is_primary`, `sort_order` where relevant; cascade only the pivot row |

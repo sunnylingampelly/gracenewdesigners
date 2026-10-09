@@ -2,6 +2,7 @@
 import type { CSSProperties } from "react";
 import type { Media } from "@/lib/types";
 import { cn, srcSet } from "@/lib/utils";
+import { getUnsplashImage, getCategoryImage } from "@/lib/unsplash-fallback";
 
 type Props = {
   media: Media | null | undefined;
@@ -14,15 +15,55 @@ type Props = {
   /** Fill the parent (which must be positioned) instead of using intrinsic dimensions. */
   fill?: boolean;
   style?: CSSProperties;
+  /** Category slug for intelligent Unsplash fallback selection */
+  categorySlug?: string;
+  /** Product ID for consistent Unsplash image per product */
+  productId?: number;
+  /** Aspect ratio for Unsplash fallback (width/height, e.g., 0.8 for 4:5) */
+  aspectRatio?: number;
 };
 
 /**
- * Responsive image backed by the backend's WebP renditions. Width/height are always set so the
- * browser reserves space (no layout shift); below-the-fold images lazy-load.
+ * Responsive image backed by the backend's WebP renditions with Unsplash fallback.
+ * When backend media isn't available, serves high-quality Unsplash images.
+ * Width/height are always set so the browser reserves space (no layout shift); 
+ * below-the-fold images lazy-load.
  */
-export function MediaImage({ media, sizes, alt, className, priority = false, fill = false, style }: Props) {
-  if (!media) {
-    return <div aria-hidden className={cn("bg-ice", fill && "absolute inset-0", className)} style={style} />;
+export function MediaImage({ 
+  media, 
+  sizes, 
+  alt, 
+  className, 
+  priority = false, 
+  fill = false, 
+  style,
+  categorySlug,
+  productId,
+  aspectRatio = 0.8, // 4:5 aspect ratio by default
+}: Props) {
+  // Use Unsplash fallback if no media provided
+  if (!media || !media.url) {
+    const width = fill ? 800 : 800;
+    const height = Math.round(width / aspectRatio);
+    
+    // Generate category-specific Unsplash image
+    const unsplashSrc = categorySlug 
+      ? getCategoryImage(categorySlug, width, height, productId)
+      : getUnsplashImage("menswear", width, height, productId);
+
+    return (
+      <img
+        src={unsplashSrc}
+        alt={alt ?? "Men's fashion"}
+        width={fill ? undefined : width}
+        height={fill ? undefined : height}
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
+        decoding={priority ? "sync" : "async"}
+        className={cn(fill && "absolute inset-0 h-full w-full object-cover", className)}
+        style={style}
+      />
+    );
   }
 
   const objectPosition = media.focal_point ? `${media.focal_point.x * 100}% ${media.focal_point.y * 100}%` : undefined;

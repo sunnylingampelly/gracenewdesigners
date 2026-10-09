@@ -21,7 +21,7 @@ class SettingsService
     public const DEFINITIONS = [
         // Brand
         'brand_name' => ['brand', ['required', 'string', 'max:120'], 'Grace New Designers', true],
-        'tagline' => ['brand', ['nullable', 'string', 'max:160'], 'Modern Indian Couture, Timeless Grace.', true],
+        'tagline' => ['brand', ['nullable', 'string', 'max:160'], 'Premium Menswear, Timeless Style.', true],
         'brand_description' => ['brand', ['nullable', 'string', 'max:2000'], null, true],
         'logo_primary_media_id' => ['brand', ['nullable', 'integer', 'exists:media_assets,id'], null, true],
         'logo_dark_bg_media_id' => ['brand', ['nullable', 'integer', 'exists:media_assets,id'], null, true],
@@ -66,7 +66,7 @@ class SettingsService
         // SEO & marketing
         'seo_title_suffix' => ['seo', ['nullable', 'string', 'max:80'], 'Grace New Designers', true],
         'seo_default_description' => ['seo', ['nullable', 'string', 'max:300'],
-            'Modern Indian couture — bridal, occasionwear and ethnic luxury by Grace New Designers.', true],
+            'Premium menswear — wedding attire, formal wear and luxury ethnic clothing for men by Grace New Designers.', true],
         'google_site_verification' => ['seo', ['nullable', 'string', 'max:120'], null, true],
         'ga4_measurement_id' => ['seo', ['nullable', 'string', 'regex:/^G-[A-Z0-9]{4,20}$/'], null, true],
 

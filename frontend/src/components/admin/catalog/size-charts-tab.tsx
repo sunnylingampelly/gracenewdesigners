@@ -74,7 +74,7 @@ export function SizeChartsTab() {
       {error ? (
         <div className="p-5"><ErrorNotice error={error} onRetry={() => refetch()} /></div>
       ) : (
-        <DataTable columns={columns} rows={data?.data} rowKey={(s) => s.id} loading={isLoading} empty={<EmptyState title="No size charts yet" description="Create a chart such as Womenswear (XS–XXXL)." />} />
+        <DataTable columns={columns} rows={data?.data} rowKey={(s) => s.id} loading={isLoading} empty={<EmptyState title="No size charts yet" description="Create a chart such as Menswear (S–XXL)." />} />
       )}
       {editing && <SizeChartModal key={editing.item?.id ?? "new"} chart={editing.item} onClose={() => setEditing(null)} />}
       {dialog}

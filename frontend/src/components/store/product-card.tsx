@@ -34,6 +34,9 @@ export function ProductCard({ product, listName, index, priority, sizes = "(min-
             priority={priority}
             alt={product.image?.alt || product.name}
             className="transition-[opacity,transform] duration-[900ms] ease-[var(--ease-luxe)] group-hover:scale-[1.02]"
+            categorySlug={product.category}
+            productId={product.id}
+            aspectRatio={0.8}
           />
           {product.hover_image && (
             <MediaImage
@@ -42,6 +45,9 @@ export function ProductCard({ product, listName, index, priority, sizes = "(min-
               fill
               alt=""
               className="hidden opacity-0 transition-opacity duration-700 ease-[var(--ease-luxe)] group-hover:opacity-100 md:block"
+              categorySlug={product.category}
+              productId={product.id}
+              aspectRatio={0.8}
             />
           )}
           {product.badges.length > 0 && (

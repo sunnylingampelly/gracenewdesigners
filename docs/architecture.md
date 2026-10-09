@@ -51,7 +51,7 @@ Browser ──► Next.js (storefront + /admin)
   is NULL. The storefront never infers availability for combinations that do not exist.
 - **Denormalised listing fields.** `products.min_price`, `has_stock` and `search_text` are recomputed by `ProductService`
   whenever a product or its variants change, so listing filters and sorts stay index-friendly.
-- **Categories use a materialised path** (`women/lehengas/velvet`) that is unique, scopes slugs to their parent and is the
+- **Categories use a materialised path** (`men/suits/formal`) that is unique, scopes slugs to their parent and is the
   public URL. Renames and moves rebuild descendant paths and record 301 redirects.
 - **Price on request is enforced server-side.** `Product::publicPrice()` returns null; public resources, WhatsApp messages
   and structured data never contain a figure for such products.

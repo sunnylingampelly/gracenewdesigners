@@ -8,7 +8,7 @@ type Props = { searchParams: Promise<SearchParamsInput> };
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   return listingMetadata({
     title: "Shop All Designs",
-    description: "Explore bridal couture, occasionwear and ethnic luxury — lehengas, sarees, gowns, sherwanis and more.",
+    description: "Explore men's formal wear, ethnic luxury, and contemporary fashion — suits, sherwanis, kurtas, blazers and more.",
     path: "/shop",
     searchParams: await searchParams,
   });

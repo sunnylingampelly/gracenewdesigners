@@ -50,7 +50,7 @@ Every user can enable 2FA under **Account & security** (authenticator app + one-
 
 ## Categories, collections, occasions, attributes
 
-- Categories nest under departments (Women, Men, Bridal, Accessories). Deleting a category never deletes products.
+- Categories nest under departments (Men, Formal, Casual, Ethnic, Accessories). Deleting a category never deletes products.
   *Hide when empty* keeps categories without live products out of menus.
 - Collections are independent edits with optional season dates and curated product order (drag to reorder).
 - Attributes (fabric, work type, …) can be marked *filterable* to appear as storefront filters; assign them to categories.

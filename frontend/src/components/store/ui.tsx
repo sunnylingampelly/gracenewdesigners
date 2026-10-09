@@ -14,7 +14,7 @@ const variants: Record<ButtonVariant, string> = {
 
 export function buttonClass(variant: ButtonVariant = "solid", className?: string) {
   return cn(
-    "inline-flex min-h-12 items-center justify-center gap-2 px-7 text-[0.7rem] font-semibold tracking-[0.2em] uppercase transition-colors duration-300 disabled:cursor-not-allowed disabled:opacity-50",
+    "inline-flex min-h-12 items-center justify-center gap-2 px-7 text-[0.7rem] font-semibold tracking-[0.2em] uppercase transition-colors duration-300 disabled:cursor-not-allowed disabled:opacity-50 touch-active active:scale-[0.97]",
     variants[variant],
     className,
   );

@@ -40,7 +40,7 @@ class ContentSeeder extends Seeder
             'returns-and-exchanges' => ['Returns & Exchanges', 'policy', 'draft', true, 'Our approach to returns, alterations and exchanges.',
                 '<p><em>Draft — add the studio’s confirmed returns, alterations and exchange policy before publishing.</em></p>'],
             'size-guide' => ['Size Guide', 'default', 'published', true, 'How to measure for the perfect fit.',
-                '<h2>Taking your measurements</h2><p>Measure over light clothing with a soft tape held snug but not tight.</p><ul><li><strong>Bust / Chest</strong> — around the fullest part.</li><li><strong>Waist</strong> — around your natural waistline.</li><li><strong>Hip</strong> — around the fullest part of the hips.</li><li><strong>Shoulder</strong> — seam to seam across the back.</li></ul><p>Each product page shows the size chart for that design. If you are between sizes, choose <strong>Custom Size</strong> or request a fitting consultation and our team will guide you.</p>'],
+                '<h2>Taking your measurements</h2><p>Measure over light clothing with a soft tape held snug but not tight.</p><ul><li><strong>Chest</strong> — around the fullest part under the arms.</li><li><strong>Waist</strong> — at your natural waistline or where you wear your trousers.</li><li><strong>Shoulder</strong> — seam to seam across the back.</li><li><strong>Sleeve Length</strong> — from shoulder seam to wrist bone.</li></ul><p>Each product page shows the size chart for that design. If you are between sizes, choose <strong>Custom Size</strong> or request a fitting consultation and our team will guide you.</p>'],
         ];
 
         foreach ($pages as $slug => [$title, $template, $status, $footer, $excerpt, $body]) {
@@ -76,7 +76,7 @@ class ContentSeeder extends Seeder
             foreach (Category::query()->where('department_id', $department->id)->whereNull('parent_id')->orderBy('sort_order')->get() as $category) {
                 $item($header, ['label' => $category->name, 'link_type' => 'category', 'link_id' => $category->id, 'group_heading' => 'Shop by Category'], $root->id, $s++);
             }
-            $occasionSlugs = $department->slug === 'bridal' ? ['wedding', 'reception', 'engagement'] : ['wedding', 'sangeet', 'festive', 'party'];
+            $occasionSlugs = ['wedding', 'reception', 'engagement', 'sangeet', 'festive-occasions', 'cocktail-parties'];
             foreach (Occasion::query()->whereIn('slug', $occasionSlugs)->orderBy('sort_order')->get() as $occasion) {
                 $item($header, ['label' => $occasion->name, 'link_type' => 'occasion', 'link_id' => $occasion->id, 'group_heading' => 'Shop by Occasion'], $root->id, $s++);
             }

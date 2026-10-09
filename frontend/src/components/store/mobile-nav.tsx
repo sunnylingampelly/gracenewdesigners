@@ -32,23 +32,27 @@ export function MobileNav({ open, onOpenChange, items, secondary, settings }: Pr
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-midnight/40 data-[state=open]:animate-fade-in" />
-        <Dialog.Content className="fixed inset-y-0 left-0 z-50 flex w-[88vw] max-w-sm flex-col bg-ivory shadow-[var(--shadow-lift)] focus:outline-none data-[state=open]:animate-fade-in">
-          <div className="flex h-16 items-center justify-between border-b border-line px-5">
+        <Dialog.Content className="fixed inset-y-0 left-0 z-50 flex w-[88vw] max-w-sm flex-col bg-ivory shadow-[var(--shadow-lift)] focus:outline-none data-[state=open]:animate-slide-up-mobile safe-area-inset-bottom">
+          <div className="flex h-14 items-center justify-between border-b border-line px-5">
             <Dialog.Title className="eyebrow text-muted">{level ? level.label : "Menu"}</Dialog.Title>
             <Dialog.Description className="sr-only">Site navigation</Dialog.Description>
-            <Dialog.Close className="-mr-2 inline-flex h-11 w-11 items-center justify-center" aria-label="Close menu">
+            <Dialog.Close className="-mr-2 inline-flex h-11 w-11 items-center justify-center touch-target active:scale-95" aria-label="Close menu">
               <X className="h-5 w-5" strokeWidth={1.4} />
             </Dialog.Close>
           </div>
 
-          <nav aria-label="Mobile" className="flex-1 overflow-y-auto px-5 py-4">
+          <nav aria-label="Mobile" className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">
             {level && (
-              <button type="button" onClick={() => setStack((s) => s.slice(0, -1))} className="mb-3 py-2 text-[0.75rem] tracking-[0.15em] text-muted uppercase">
+              <button 
+                type="button" 
+                onClick={() => setStack((s) => s.slice(0, -1))} 
+                className="mb-3 py-2 text-[0.75rem] tracking-[0.15em] text-muted uppercase touch-target active:scale-95"
+              >
                 ← Back
               </button>
             )}
             {level?.url && (
-              <Link href={level.url} onClick={close} className="display mb-2 block border-b border-line py-3 text-2xl text-royal">
+              <Link href={level.url} onClick={close} className="display mb-2 block border-b border-line py-3 text-2xl text-royal touch-active">
                 Shop all {level.label}
               </Link>
             )}
@@ -63,13 +67,13 @@ export function MobileNav({ open, onOpenChange, items, secondary, settings }: Pr
                           <button
                             type="button"
                             onClick={() => setStack((s) => [...s, item])}
-                            className="flex min-h-12 w-full items-center justify-between border-b border-line/70 py-3 text-left"
+                            className="flex min-h-12 w-full items-center justify-between border-b border-line/70 py-3 text-left touch-target active:scale-[0.99]"
                           >
                             <span className={cn(level ? "text-[1rem]" : "display text-[1.6rem]")}>{item.label}</span>
                             <ChevronRight className="h-4 w-4 text-muted" strokeWidth={1.4} />
                           </button>
                         ) : item.url ? (
-                          <Link href={item.url} onClick={close} className={cn("flex min-h-12 items-center border-b border-line/70 py-3", level ? "text-[1rem]" : "display text-[1.6rem]")}>
+                          <Link href={item.url} onClick={close} className={cn("flex min-h-12 items-center border-b border-line/70 py-3 touch-active", level ? "text-[1rem]" : "display text-[1.6rem]")}>
                             {item.label}
                           </Link>
                         ) : null}
@@ -82,9 +86,9 @@ export function MobileNav({ open, onOpenChange, items, secondary, settings }: Pr
 
             {!level && (
               <ul className="mt-8 space-y-1">
-                {[{ label: "Wishlist", url: "/wishlist" }, { label: "Enquiry Bag", url: "/bag" }, { label: "Contact", url: "/contact" }, ...secondary.map((s) => ({ label: s.label, url: s.url ?? "/" }))].map((link) => (
+                {[{ label: "Contact", url: "/contact" }, ...secondary.map((s) => ({ label: s.label, url: s.url ?? "/" }))].map((link) => (
                   <li key={link.label}>
-                    <Link href={link.url} onClick={close} className="flex min-h-11 items-center text-[0.85rem] tracking-[0.06em] text-muted">
+                    <Link href={link.url} onClick={close} className="flex min-h-11 items-center text-[0.85rem] tracking-[0.06em] text-muted touch-active">
                       {link.label}
                     </Link>
                   </li>
@@ -98,7 +102,7 @@ export function MobileNav({ open, onOpenChange, items, secondary, settings }: Pr
               href={`https://wa.me/${settings.whatsapp_business_number.replace(/\D/g, "")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="m-5 flex min-h-12 items-center justify-center gap-2 bg-midnight text-[0.75rem] font-semibold tracking-[0.18em] text-ivory uppercase"
+              className="m-5 mb-20 flex min-h-12 items-center justify-center gap-2 bg-midnight text-[0.75rem] font-semibold tracking-[0.18em] text-ivory uppercase touch-active active:scale-[0.98]"
             >
               <MessageCircle className="h-4 w-4" strokeWidth={1.4} /> Chat on WhatsApp
             </a>

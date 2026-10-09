@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MediaImage } from "@/components/media/media-image";
 import type { HomepageSection, Media, ProductCard as Card, PublicSettings } from "@/lib/types";
 import { cn, splitParagraphs } from "@/lib/utils";
+import { getHeroImage } from "@/lib/unsplash-fallback";
 import { HeroVideo } from "./hero-video";
 import { NewsletterForm } from "./newsletter-form";
 import { ProductCard } from "./product-card";

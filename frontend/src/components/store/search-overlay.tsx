@@ -69,7 +69,7 @@ export function SearchOverlay({ open, onOpenChange }: Props) {
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search lehengas, sarees, sherwanis…"
+                placeholder="Search suits, sherwanis, blazers…"
                 aria-label="Search"
                 aria-controls={listId}
                 aria-autocomplete="list"
@@ -86,7 +86,7 @@ export function SearchOverlay({ open, onOpenChange }: Props) {
               {!visible && (
                 <div className="flex flex-wrap gap-2">
                   <span className="eyebrow mr-2 self-center text-muted">Popular</span>
-                  {["Lehenga", "Saree", "Sherwani", "Bridal", "Organza", "Reception"].map((term) => (
+                  {["Suits", "Sherwani", "Blazer", "Formal", "Casual", "Kurta"].map((term) => (
                     <button key={term} type="button" onClick={() => setQuery(term)} className="border border-line px-4 py-2 text-sm transition-colors hover:border-ink">
                       {term}
                     </button>

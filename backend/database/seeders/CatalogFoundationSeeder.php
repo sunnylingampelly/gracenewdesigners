@@ -124,12 +124,10 @@ class CatalogFoundationSeeder extends Seeder
     private function taxonomy(array $charts): void
     {
         $tree = [
-            'Women' => ['chart' => 'women', 'children' => ['Sarees' => 'free', 'Lehengas' => null, 'Anarkalis' => null, 'Salwar Suits' => null,
-                'Kurta Sets' => null, 'Gowns' => null, 'Dresses' => null, 'Sharara Sets' => null, 'Co-ord Sets' => null, 'Indo-Western Wear' => null]],
-            'Men' => ['chart' => 'men', 'children' => ['Sherwanis' => null, 'Kurta Sets' => null, 'Bandhgalas' => null,
-                'Jacket Sets' => null, 'Blazers' => null, 'Indo-Western Sets' => null]],
-            'Bridal' => ['chart' => 'women', 'children' => ['Bridal Lehengas' => null, 'Bridal Sarees' => 'free', 'Reception Wear' => null, 'Engagement Wear' => null]],
-            'Accessories' => ['chart' => 'free', 'children' => ['Dupattas' => 'free', 'Blouses' => 'women', 'Jewellery' => null, 'Potli Bags' => null]],
+            'Wedding Collection' => ['chart' => 'men', 'children' => ['Sherwanis' => null, 'Bandhgalas' => null, 'Indo-Western Sets' => null, 'Kurta Sets' => null]],
+            'Formal Wear' => ['chart' => 'men', 'children' => ['Suits' => null, 'Blazers' => null, 'Tuxedos' => null, 'Waistcoats' => null]],
+            'Ethnic Wear' => ['chart' => 'men', 'children' => ['Kurta Pajamas' => null, 'Pathani Suits' => null, 'Nehru Jackets' => null, 'Jodhpuri Suits' => null]],
+            'Accessories' => ['chart' => 'free', 'children' => ['Pocket Squares' => null, 'Stoles' => null, 'Turbans' => null, 'Brooches' => null, 'Cufflinks' => null]],
         ];
 
         $d = 0;
@@ -160,14 +158,14 @@ class CatalogFoundationSeeder extends Seeder
     private function occasions(): void
     {
         $occasions = [
-            'Wedding' => 'Heirloom silhouettes for the ceremony itself.',
-            'Reception' => 'Evening glamour with luminous fabrics and refined embellishment.',
-            'Engagement' => 'Statement looks for exchanging rings and blessings.',
-            'Sangeet' => 'Movement-friendly pieces made for music and dance.',
-            'Mehendi' => 'Light, joyful colour for daytime celebrations.',
-            'Festive' => 'Considered ensembles for Diwali, Eid and family gatherings.',
-            'Party' => 'Contemporary occasionwear for cocktails and soirées.',
-            'Casual Luxury' => 'Effortless pieces for everyday elegance.',
+            'Wedding' => 'Distinguished attire for the ceremony itself - where tradition meets impeccable tailoring.',
+            'Reception' => 'Refined evening wear with sophisticated embellishment for the celebration.',
+            'Engagement' => 'Statement pieces for marking the commitment with style.',
+            'Sangeet' => 'Elegant yet comfortable designs perfect for celebrations with music and dance.',
+            'Festive Occasions' => 'Premium ensembles for Diwali, Eid and family gatherings.',
+            'Cocktail Parties' => 'Contemporary formal wear for evening events and soirées.',
+            'Business Formal' => 'Sharp tailoring for boardrooms and professional events.',
+            'Casual Elegant' => 'Refined pieces for everyday sophistication.',
         ];
         $i = 0;
         foreach ($occasions as $name => $description) {

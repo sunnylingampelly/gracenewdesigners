@@ -19,7 +19,7 @@ export default function CategoriesPage() {
     <RequirePermission permission={["taxonomy.manage", "products.view"]}>
       <PageHeader
         title="Categories"
-        description="Departments are the top level of the shop (Women, Men, Bridal…). Categories nest inside a department and form the /shop URLs and menus."
+        description="Departments are the top level of the shop (Men, Formal, Ethnic, Accessories…). Categories nest inside a department and form the /shop URLs and menus."
       />
       <div className="space-y-8">
         <DepartmentsSection />
@@ -101,7 +101,7 @@ function DepartmentsSection() {
           rows={data?.data}
           rowKey={(d) => d.id}
           loading={isLoading}
-          empty={<EmptyState title="No departments yet" description="Create a department such as Women or Bridal to start organising categories." />}
+          empty={<EmptyState title="No departments yet" description="Create a department such as Men, Formal or Ethnic to start organising categories." />}
         />
       )}
       {editing && <DepartmentModal key={editing.item?.id ?? "new"} department={editing.item} onClose={() => setEditing(null)} />}

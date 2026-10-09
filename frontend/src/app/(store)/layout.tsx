@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { ConsentAndAnalytics } from "@/components/store/consent-and-analytics";
 import { Footer } from "@/components/store/footer";
 import { Header } from "@/components/store/header";
+import { MobileBottomNavWrapper } from "@/components/store/mobile-bottom-nav-wrapper";
 import { api, siteUrl } from "@/lib/api-server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -12,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const suffix = settings.seo_title_suffix || settings.brand_name;
 
   return {
-    title: { default: `${settings.brand_name} — ${settings.tagline ?? "Modern Indian Couture"}`, template: `%s | ${suffix}` },
+    title: { default: `${settings.brand_name} — ${settings.tagline ?? "Modern Men's Fashion"}`, template: `%s | ${suffix}` },
     description: settings.seo_default_description ?? undefined,
     applicationName: settings.brand_name,
     icons: settings.favicon ? { icon: settings.favicon.url } : undefined,
@@ -59,8 +60,9 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         </div>
       )}
       <Header items={navigation.header ?? []} secondary={navigation.mobile_secondary ?? []} settings={settings} />
-      <main id="main" className="flex-1">{children}</main>
+      <main id="main" className="flex-1 pb-20 lg:pb-0">{children}</main>
       <Footer settings={settings} menus={{ shop: navigation.footer_shop ?? [], house: navigation.footer_house ?? [], help: navigation.footer_help ?? [] }} />
+      <MobileBottomNavWrapper />
       <Suspense fallback={null}>
         <ConsentAndAnalytics ga4Id={settings.ga4_measurement_id} />
       </Suspense>

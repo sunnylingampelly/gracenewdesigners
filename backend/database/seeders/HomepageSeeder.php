@@ -31,11 +31,9 @@ class HomepageSeeder extends Seeder
         $craft = PlaceholderMedia::make('Craftsmanship', '#C9A54C', '#102E55', 1600, 2000, 'Placeholder craftsmanship close-up');
         $appointment = PlaceholderMedia::make('Consultation', '#102E55', '#79B7DF', 1600, 2000, 'Placeholder consultation image');
 
-        $categoryItems = collect(['women/sarees', 'women/lehengas', 'women/gowns', 'women/kurta-sets', 'bridal/bridal-lehengas', 'men/sherwanis'])
+        $categoryItems = collect(['wedding-collection/sherwanis', 'wedding-collection/bandhgalas', 'formal-wear/suits', 'formal-wear/blazers', 'ethnic-wear/kurta-pajamas', 'ethnic-wear/nehru-jackets'])
             ->map(fn ($path) => Category::query()->where('path', $path)->first())->filter()
-            ->map(fn (Category $c) => ['category_id' => $c->id, 'label' => match ($c->path) {
-                'bridal/bridal-lehengas' => 'Bridal Wear', 'men/sherwanis' => 'Menswear', default => $c->name,
-            }])->values()->all();
+            ->map(fn (Category $c) => ['category_id' => $c->id, 'label' => $c->name])->values()->all();
 
         $signature = Collection::query()->where('is_featured', true)->orderBy('sort_order')->first() ?? Collection::query()->first();
         $lookbook = Lookbook::query()->first();
@@ -43,8 +41,8 @@ class HomepageSeeder extends Seeder
 
         $sections = [
             [SectionType::HeroImage, 'Hero', [
-                'eyebrow' => 'The New Season', 'headline' => 'Elegance, Reimagined.',
-                'subtitle' => 'Discover thoughtfully crafted fashion for your most memorable moments.',
+                'eyebrow' => 'The New Season', 'headline' => 'Tailored Excellence.',
+                'subtitle' => 'Discover precision-crafted menswear for the modern gentleman.',
                 'cta_label' => 'Explore the Collection', 'cta_url' => $signature ? '/collections/'.$signature->slug : '/collections',
                 'desktop_media_id' => $hero->id, 'mobile_media_id' => $heroMobile->id,
                 'align' => 'center', 'overlay_opacity' => 0.35, 'height' => 'full',
@@ -55,11 +53,11 @@ class HomepageSeeder extends Seeder
             ]] : null,
             [SectionType::FeaturedProducts, 'New Arrivals', ['eyebrow' => 'Just In', 'title' => 'New Arrivals', 'source' => 'new_arrivals', 'limit' => 8, 'layout' => 'carousel', 'cta_label' => 'View all new arrivals', 'cta_url' => '/new-arrivals']],
             [SectionType::OccasionGrid, 'Shop by Occasion', ['eyebrow' => 'Dressed for the Moment', 'title' => 'Shop by Occasion']],
-            [SectionType::SplitEditorial, 'Bridal Feature', [
-                'eyebrow' => 'Bridal', 'title' => 'For the Bride, Made by Hand',
-                'body' => "Bridal lehengas, sarees and reception looks, shaped around you.\nBegin with a consultation and we will guide you through fabric, colour and fit.",
+            [SectionType::SplitEditorial, 'Wedding Feature', [
+                'eyebrow' => 'Wedding Collection', 'title' => 'For the Groom, Crafted to Perfection',
+                'body' => "Wedding sherwanis, bandhgalas and reception suits, tailored to your exact specifications.\nBegin with a consultation and we will guide you through fabric, design and fit.",
                 'media_id' => $bridal->id, 'image_position' => 'right', 'theme' => 'navy',
-                'cta_label' => 'Explore Bridal', 'cta_url' => '/shop/bridal',
+                'cta_label' => 'Explore Wedding Wear', 'cta_url' => '/shop/wedding-collection',
             ]],
             [SectionType::FeaturedProducts, 'Bestsellers', ['eyebrow' => 'Most Loved', 'title' => 'Bestsellers', 'source' => 'bestsellers', 'limit' => 4, 'layout' => 'grid']],
             [SectionType::BrandStory, 'Brand Story', [
@@ -74,10 +72,10 @@ class HomepageSeeder extends Seeder
                 'body' => 'Every design is shaped by fabric, hand and fit.',
                 'media_id' => $craft->id,
                 'pillars' => [
-                    ['title' => 'Fabrics', 'body' => 'Silks, organzas, velvets and handloom textiles chosen for drape and longevity.'],
-                    ['title' => 'Embroidery', 'body' => 'Hand-finished zardozi, resham, gota and pearl work.'],
-                    ['title' => 'Design Philosophy', 'body' => 'Heritage techniques interpreted with a contemporary eye.'],
-                    ['title' => 'Made to Measure', 'body' => 'Many designs can be tailored to your measurements after a fitting consultation.'],
+                    ['title' => 'Premium Fabrics', 'body' => 'Fine wools, silk blends, premium cotton and luxury textiles chosen for their quality and drape.'],
+                    ['title' => 'Tailoring Excellence', 'body' => 'Precision-cut patterns and hand-finished details that ensure a perfect fit.'],
+                    ['title' => 'Design Philosophy', 'body' => 'Classic menswear traditions interpreted with a modern sensibility.'],
+                    ['title' => 'Bespoke Service', 'body' => 'Every design can be tailored to your exact measurements with personal guidance.'],
                 ],
             ]],
             [SectionType::Testimonials, 'Client Testimonials', ['eyebrow' => 'Kind Words', 'title' => 'From Our Clients', 'limit' => 6]],
