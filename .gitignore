@@ -1,0 +1,21 @@
+# Dependencies
+frontend/node_modules/
+backend-fresh/vendor/
+
+# Environment files (contain secrets)
+backend-fresh/.env
+frontend/.env
+
+# Laravel generated
+backend-fresh/storage/logs/*.log
+backend-fresh/storage/framework/cache/
+backend-fresh/storage/framework/sessions/
+backend-fresh/storage/framework/views/
+backend-fresh/bootstrap/cache/*.php
+
+# Vite build output
+frontend/dist/
+
+# OS
+.DS_Store
+Thumbs.db
