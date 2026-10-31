@@ -2,6 +2,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\BillLineItem;
+use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\ProductVariant;
 use App\Models\Purchase;
@@ -14,31 +16,96 @@ class ReportController extends Controller
 {
     public function dashboard(Request $request)
     {
-        $date  = $request->date ?? today()->toDateString();
-        $month = $request->month ?? now()->format('Y-m');
+        $from = $request->date_from ?? today()->toDateString();
+        $to   = $request->date_to   ?? today()->toDateString();
 
-        $todayBills = SalesBill::whereDate('bill_date', $date)->where('status', '!=', 'void');
-        $monthBills = SalesBill::whereBetween('bill_date', ["{$month}-01", now()->endOfMonth()->toDateString()])
-                               ->where('status', '!=', 'void');
+        // Previous period (same length)
+        $days    = max(1, \Carbon\Carbon::parse($from)->diffInDays(\Carbon\Carbon::parse($to)) + 1);
+        $prevTo  = \Carbon\Carbon::parse($from)->subDay()->toDateString();
+        $prevFrom= \Carbon\Carbon::parse($prevTo)->subDays($days - 1)->toDateString();
+
+        $bills     = SalesBill::whereBetween('bill_date', [$from, $to])->where('status', '!=', 'void');
+        $prevBills = SalesBill::whereBetween('bill_date', [$prevFrom, $prevTo])->where('status', '!=', 'void');
+
+        $sales     = (clone $bills)->sum('total_amount');
+        $prevSales = (clone $prevBills)->sum('total_amount');
+        $count     = (clone $bills)->count();
+        $prevCount = (clone $prevBills)->count();
+        $collected = Payment::whereHas('bill', fn($q) => $q->whereBetween('bill_date', [$from, $to]))->sum('amount');
+        $outstanding = SalesBill::whereBetween('bill_date', [$from, $to])->whereIn('status', ['partial','posted'])->sum('amount_due');
+
+        // Payment mode breakdown
+        $paymentModes = Payment::whereHas('bill', fn($q) => $q->whereBetween('bill_date', [$from, $to]))
+            ->selectRaw('mode, SUM(amount) as total')
+            ->groupBy('mode')
+            ->pluck('total', 'mode');
+
+        // Daily trend within period (for chart)
+        $trend = SalesBill::selectRaw('DATE(bill_date) as date, COUNT(*) as count, SUM(total_amount) as sales')
+            ->whereBetween('bill_date', [$from, $to])
+            ->where('status', '!=', 'void')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        // Top products
+        $topProducts = \App\Models\BillLineItem::join('sales_bills', 'bill_line_items.bill_id', '=', 'sales_bills.id')
+            ->join('product_variants', 'bill_line_items.variant_id', '=', 'product_variants.id')
+            ->join('products', 'product_variants.product_id', '=', 'products.id')
+            ->whereBetween('sales_bills.bill_date', [$from, $to])
+            ->where('sales_bills.status', '!=', 'void')
+            ->selectRaw('products.name, SUM(bill_line_items.quantity) as qty_sold, SUM(bill_line_items.quantity * bill_line_items.unit_price) as revenue')
+            ->groupBy('products.id', 'products.name')
+            ->orderByDesc('revenue')
+            ->limit(5)
+            ->get();
+
+        // Low stock items
+        $lowStock = ProductVariant::with('product')
+            ->where('is_active', true)
+            ->whereColumn('qty_on_hand', '<=', 'reorder_threshold')
+            ->orderBy('qty_on_hand')
+            ->limit(10)
+            ->get()
+            ->map(fn($v) => [
+                'sku'        => $v->sku,
+                'product'    => $v->product->name,
+                'on_hand'    => $v->qty_on_hand,
+                'reorder_at' => $v->reorder_threshold,
+            ]);
+
+        // New customers in period
+        $newCustomers = \App\Models\Customer::whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->count();
+
+        // Top staff
+        $topStaff = DB::table('users')
+            ->join('sales_bills', 'sales_bills.created_by', '=', 'users.id')
+            ->whereBetween('sales_bills.bill_date', [$from, $to])
+            ->where('sales_bills.status', '!=', 'void')
+            ->selectRaw('users.name, COUNT(*) as bills, SUM(sales_bills.total_amount) as revenue')
+            ->groupBy('users.id', 'users.name')
+            ->orderByDesc('revenue')
+            ->limit(5)
+            ->get();
 
         return response()->json([
-            'today' => [
-                'sales'       => $todayBills->sum('total_amount'),
-                'count'       => $todayBills->count(),
-                'avg_bill'    => $todayBills->avg('total_amount') ?? 0,
-                'collected'   => Payment::whereHas('bill', fn($q) => $q->whereDate('bill_date', $date))->sum('amount'),
-                'outstanding' => SalesBill::whereDate('bill_date', $date)->where('status', 'partial')->sum('amount_due'),
-            ],
-            'month' => [
-                'sales'     => $monthBills->sum('total_amount'),
-                'count'     => $monthBills->count(),
-                'discounts' => $monthBills->sum('discount_amount'),
-                'returns'   => $monthBills->where('status', 'refunded')->count(),
-            ],
-            'low_stock' => ProductVariant::whereColumn('qty_on_hand', '<=', 'reorder_threshold')
-                ->where('is_active', true)
-                ->with('product')
-                ->count(),
+            'period'        => compact('from', 'to', 'prevFrom', 'prevTo'),
+            'sales'         => $sales,
+            'prev_sales'    => $prevSales,
+            'count'         => $count,
+            'prev_count'    => $prevCount,
+            'avg_bill'      => $count > 0 ? round($sales / $count, 0) : 0,
+            'collected'     => $collected,
+            'outstanding'   => $outstanding,
+            'discounts'     => (clone $bills)->sum('discount_amount'),
+            'refunds'       => (clone $bills)->where('status', 'refunded')->count(),
+            'new_customers' => $newCustomers,
+            'payment_modes' => $paymentModes,
+            'trend'         => $trend,
+            'top_products'  => $topProducts,
+            'top_staff'     => $topStaff,
+            'low_stock'     => $lowStock,
+            'low_stock_count' => $lowStock->count(),
         ]);
     }
 

@@ -23,6 +23,7 @@ import AuditLog     from './pages/admin/AuditLog';
 import Users        from './pages/admin/Users';
 import Categories   from './pages/admin/Categories';
 import SiteContent  from './pages/admin/SiteContent';
+import SaleDetail   from './pages/admin/SaleDetail';
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuthStore();
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="purchases"  element={<Purchases />} />
           <Route path="sales"      element={<Sales />} />
           <Route path="sales/new"  element={<NewSale />} />
+          <Route path="sales/:id"  element={<SaleDetail />} />
           <Route path="crm"        element={<CRM />} />
           <Route path="reports"    element={<Reports />} />
           <Route path="audit"      element={<AuditLog />} />
