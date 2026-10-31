@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersApi, rolesApi } from '../../api/client';
-import { Plus, Trash2, ToggleLeft, ToggleRight, Shield, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, ToggleLeft, ToggleRight, Shield, ChevronDown, ChevronUp, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 
 const MODULES = [
@@ -20,6 +20,7 @@ const MODULES = [
 
 export default function Users() {
   const [showForm,        setShowForm]        = useState(false);
+  const [editUser,        setEditUser]        = useState(null);
   const [showPermissions, setShowPermissions] = useState(false);
   const qc = useQueryClient();
 
@@ -93,6 +94,10 @@ export default function Users() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3 justify-end">
+                      <button onClick={() => setEditUser(u)} title="Edit user"
+                        className="text-gray-400 hover:text-blue-500 transition-colors">
+                        <Pencil size={14} />
+                      </button>
                       <button onClick={() => toggleMutation.mutate(u.id)}
                         title={u.is_active ? 'Deactivate' : 'Activate'}
                         className="text-gray-400 hover:text-blue-500 transition-colors">
@@ -120,6 +125,14 @@ export default function Users() {
         <NewUserModal
           onClose={() => setShowForm(false)}
           onSaved={() => { setShowForm(false); qc.invalidateQueries({ queryKey: ['users'] }); }}
+        />
+      )}
+
+      {editUser && (
+        <EditUserModal
+          user={editUser}
+          onClose={() => setEditUser(null)}
+          onSaved={() => { setEditUser(null); qc.invalidateQueries({ queryKey: ['users'] }); }}
         />
       )}
     </div>
@@ -235,6 +248,75 @@ function RolePermissionsPanel() {
               </div>
             );
           })}
+      </div>
+    </div>
+  );
+}
+
+// ── Edit User Modal ───────────────────────────────────────────────────────────
+
+function EditUserModal({ user, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    name:     user.name     ?? '',
+    phone:    user.phone    ?? '',
+    role_id:  user.role?.id ?? '',
+    password: '',
+  });
+  const [error, setError] = useState('');
+
+  const { data: roles = [] } = useQuery({
+    queryKey: ['roles'],
+    queryFn:  () => rolesApi.list().then(r => r.data.data ?? r.data),
+  });
+
+  const mutation = useMutation({
+    mutationFn: d => usersApi.update(user.id, d),
+    onSuccess:  onSaved,
+    onError:    err => setError(err.response?.data?.message || 'Failed to update user.'),
+  });
+
+  const set = (f, v) => setForm(p => ({ ...p, [f]: v }));
+
+  function submit() {
+    const payload = { name: form.name, phone: form.phone, role_id: form.role_id };
+    if (form.password.trim()) payload.password = form.password;
+    mutation.mutate(payload);
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
+        <h2 className="font-semibold text-lg">Edit User — {user.name}</h2>
+        <p className="text-xs text-gray-400">{user.email}</p>
+
+        {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded">{error}</p>}
+
+        <div>
+          <label className="label">Full Name *</label>
+          <input className="input" value={form.name} onChange={e => set('name', e.target.value)} required />
+        </div>
+        <div>
+          <label className="label">Phone</label>
+          <input className="input" value={form.phone} onChange={e => set('phone', e.target.value)} />
+        </div>
+        <div>
+          <label className="label">Role *</label>
+          <select className="input" value={form.role_id} onChange={e => set('role_id', e.target.value)} required>
+            <option value="">— Select role —</option>
+            {roles.map(r => <option key={r.id} value={r.id}>{r.display_name}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="label">New Password <span className="text-gray-400 font-normal">(leave blank to keep current)</span></label>
+          <input className="input" type="password" value={form.password} onChange={e => set('password', e.target.value)} placeholder="••••••••" />
+        </div>
+
+        <div className="flex gap-3 pt-1">
+          <button onClick={submit} disabled={mutation.isPending} className="btn-primary flex-1">
+            {mutation.isPending ? 'Saving…' : 'Save Changes'}
+          </button>
+          <button onClick={onClose} className="btn-secondary">Cancel</button>
+        </div>
       </div>
     </div>
   );

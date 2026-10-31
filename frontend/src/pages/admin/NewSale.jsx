@@ -2,8 +2,15 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { salesApi, customersApi, productsApi } from '../../api/client';
-import { Plus, Trash2, ChevronDown, User, Phone, CreditCard, Banknote, Smartphone, CheckSquare } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, User, CreditCard, Banknote, Smartphone, CheckSquare } from 'lucide-react';
 import { format } from 'date-fns';
+
+function getISTDate() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+}
+function getISTDisplay() {
+  return new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' });
+}
 
 const fmt = n => '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
 
@@ -33,7 +40,7 @@ export default function NewSale() {
   const [custPhone,    setCustPhone]    = useState('');
 
   // ── Bill meta ─────────────────────────────────────────────
-  const [billDate, setBillDate]         = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [billDate]                      = useState(getISTDate()); // auto IST, not editable
   const [notes,    setNotes]            = useState('');
   const [discount, setDiscount]         = useState(0);
 
@@ -215,7 +222,10 @@ export default function NewSale() {
 
           <div>
             <label className="label">Bill Date</label>
-            <input type="date" className="input w-40" value={billDate} onChange={e => setBillDate(e.target.value)} required />
+            <div className="input w-auto inline-flex items-center gap-2 bg-gray-50 text-gray-600 cursor-default select-none">
+              <span className="text-sm">{getISTDisplay()}</span>
+              <span className="text-xs text-gray-400">(IST)</span>
+            </div>
           </div>
         </div>
 

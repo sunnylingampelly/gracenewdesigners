@@ -31,7 +31,7 @@ export default function Home() {
   const { data: settings = {} } = useQuery({
     queryKey: ['public-site-settings'],
     queryFn:  () => siteSettingsApi.publicGet().then(r => r.data),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
   });
 
   const s = key => settings[key] ?? null;
@@ -40,20 +40,32 @@ export default function Home() {
     <>
       {/* ── Hero ── */}
       <section className="relative h-screen flex items-center bg-gradient-to-br from-[#F5F8FF] via-white to-[#EEF4FF] overflow-hidden pt-16">
-        {/* Subtle background shapes */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-20 right-0 w-[500px] h-[500px] rounded-full bg-[#29ABE2]/8 blur-[120px]" />
-          <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full bg-[#1565C0]/6 blur-[100px]" />
-        </div>
+        {/* Hero image (admin-controlled) */}
+        {s('hero_image') && (
+          <img
+            src={`/storage/${s('hero_image')}`}
+            alt="Hero"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+        {/* Overlay — stronger when image is present */}
+        <div className={`absolute inset-0 pointer-events-none ${s('hero_image') ? 'bg-[#0A1628]/55' : ''}`} />
+        {/* Subtle background shapes (shown when no image) */}
+        {!s('hero_image') && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute top-20 right-0 w-[500px] h-[500px] rounded-full bg-[#29ABE2]/8 blur-[120px]" />
+            <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full bg-[#1565C0]/6 blur-[100px]" />
+          </div>
+        )}
 
         <div className="relative z-10 max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12 items-end w-full">
           <div>
-            <p className="text-xs tracking-widest uppercase text-[#1565C0] mb-4 font-medium">Designer Menswear · Made to Measure</p>
-            <h1 className="font-display text-5xl md:text-7xl font-light leading-[1.05] text-[#0A1628] mb-6">
+            <p className={`text-xs tracking-widest uppercase mb-4 font-medium ${s('hero_image') ? 'text-[#29ABE2]' : 'text-[#1565C0]'}`}>Designer Menswear · Made to Measure</p>
+            <h1 className={`font-display text-5xl md:text-7xl font-light leading-[1.05] mb-6 ${s('hero_image') ? 'text-white' : 'text-[#0A1628]'}`}>
               {s('hero_title') || 'Dressed for'}<br/>
-              <em className="text-[#1565C0] not-italic">{s('hero_title_accent') || 'every occasion'}</em>
+              <em className={`not-italic ${s('hero_image') ? 'text-[#29ABE2]' : 'text-[#1565C0]'}`}>{s('hero_title_accent') || 'every occasion'}</em>
             </h1>
-            <p className="text-[#6B82A8] max-w-sm leading-relaxed mb-8">
+            <p className={`max-w-sm leading-relaxed mb-8 ${s('hero_image') ? 'text-white/80' : 'text-[#6B82A8]'}`}>
               {s('hero_subtitle') || 'Bespoke suits, sherwanis and occasion wear — crafted to your measurements and personality.'}
             </p>
             <div className="flex gap-4 flex-wrap">
