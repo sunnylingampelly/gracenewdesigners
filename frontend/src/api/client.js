@@ -53,11 +53,17 @@ export const productsApi = {
 };
 
 export const categoriesApi = {
-  list:    params  => client.get('/public/categories', { params }),
-  adminList: params => client.get('/categories', { params }),
-  create:  data    => client.post('/categories', data),
-  update:  (id, d) => client.put(`/categories/${id}`, d),
-  remove:  id      => client.delete(`/categories/${id}`),
+  list:      params    => client.get('/public/categories', { params }),
+  adminList: params    => client.get('/categories', { params }),
+  create:    data      => client.post('/categories', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update:    (id, data) => client.post(`/categories/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  remove:    id        => client.delete(`/categories/${id}`),
+};
+
+export const siteSettingsApi = {
+  publicGet: ()     => client.get('/public/site-settings'),
+  get:       ()     => client.get('/site-settings'),
+  update:    data   => client.post('/site-settings', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
 };
 
 export const collectionsApi = {
@@ -108,6 +114,7 @@ export const inventoryApi = {
   list:      params  => client.get('/inventory', { params }),
   movements: params  => client.get('/inventory/movements', { params }),
   adjust:    data    => client.post('/inventory/adjust', data),
+  stockList: params  => client.get('/inventory', { params: { per_page: 200, ...params } }),
 };
 
 export const reportsApi = {
@@ -122,7 +129,14 @@ export const reportsApi = {
 };
 
 export const usersApi = {
-  list:   () => client.get('/users'),
-  create: d  => client.post('/users', d),
-  update: (id, d) => client.put(`/users/${id}`, d),
+  list:    ()       => client.get('/users'),
+  create:  d        => client.post('/users', d),
+  update:  (id, d)  => client.put(`/users/${id}`, d),
+  remove:  id       => client.delete(`/users/${id}`),
+  toggle:  id       => client.post(`/users/${id}/toggle`),
+};
+
+export const rolesApi = {
+  list:              ()           => client.get('/roles'),
+  updatePermissions: (id, perms)  => client.put(`/roles/${id}`, { permissions: perms }),
 };

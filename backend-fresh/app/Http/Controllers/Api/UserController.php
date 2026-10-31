@@ -84,4 +84,35 @@ class UserController extends Controller
 
         return response()->json(['message' => 'User deactivated.']);
     }
+
+    public function toggle(Request $request, User $user)
+    {
+        if ($request->user()->id === $user->id) {
+            return response()->json(['message' => 'Cannot deactivate your own account.'], 422);
+        }
+
+        $newState = !$user->is_active;
+        $user->update(['is_active' => $newState]);
+
+        if (!$newState) {
+            $user->tokens()->delete();
+        }
+
+        AuditEvent::log('user', $newState ? 'activate' : 'deactivate', $user, null, $request->user());
+
+        return response()->json(['is_active' => $newState]);
+    }
+
+    public function destroy(Request $request, User $user)
+    {
+        if ($request->user()->id === $user->id) {
+            return response()->json(['message' => 'Cannot delete your own account.'], 422);
+        }
+
+        $user->tokens()->delete();
+        AuditEvent::log('user', 'delete', $user, null, $request->user());
+        $user->delete();
+
+        return response()->json(['message' => 'User deleted.']);
+    }
 }

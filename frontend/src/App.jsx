@@ -22,6 +22,7 @@ import Reports      from './pages/admin/Reports';
 import AuditLog     from './pages/admin/AuditLog';
 import Users        from './pages/admin/Users';
 import Categories   from './pages/admin/Categories';
+import SiteContent  from './pages/admin/SiteContent';
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuthStore();
@@ -57,7 +58,8 @@ export default function App() {
           <Route path="reports"    element={<Reports />} />
           <Route path="audit"      element={<AuditLog />} />
           <Route path="users"       element={<Users />} />
-          <Route path="categories" element={<Categories />} />
+          <Route path="categories"   element={<Categories />} />
+          <Route path="site-content" element={<SiteContent />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -19,6 +19,7 @@ Route::prefix('public')->group(function () {
     Route::get('categories',         [\App\Http\Controllers\Api\CategoryController::class, 'index']);
     Route::get('collections',        [\App\Http\Controllers\Api\CollectionController::class, 'index']);
     Route::get('whatsapp-number',    fn() => response()->json(['number' => config('app.whatsapp_number', env('WHATSAPP_NUMBER'))]));
+    Route::get('site-settings',      [\App\Http\Controllers\Api\SiteSettingController::class, 'publicIndex']);
 });
 
 // ── AUTH ────────────────────────────────────────────────────────────────────
@@ -32,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // ── CATALOGUE ───────────────────────────────────────────────────────────
     Route::apiResource('products',   ProductController::class);
     Route::apiResource('categories', \App\Http\Controllers\Api\CategoryController::class);
+    Route::post('categories/{category}', [\App\Http\Controllers\Api\CategoryController::class, 'update']);
     Route::apiResource('collections',\App\Http\Controllers\Api\CollectionController::class);
 
     Route::prefix('products/{product}')->group(function () {
@@ -83,10 +85,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ── USER MANAGEMENT ──────────────────────────────────────────────────────
     Route::apiResource('users', UserController::class);
+    Route::post('users/{user}/toggle', [UserController::class, 'toggle']);
     Route::apiResource('roles', \App\Http\Controllers\Api\RoleController::class);
 
     // ── DAY CLOSE ────────────────────────────────────────────────────────────
     Route::get('day-close',          [\App\Http\Controllers\Api\DayCloseController::class, 'index']);
     Route::get('day-close/summary',  [\App\Http\Controllers\Api\DayCloseController::class, 'summary']);
     Route::post('day-close',         [\App\Http\Controllers\Api\DayCloseController::class, 'store']);
+
+    // ── SITE SETTINGS ────────────────────────────────────────────────────────
+    Route::get('site-settings',  [\App\Http\Controllers\Api\SiteSettingController::class, 'index']);
+    Route::post('site-settings', [\App\Http\Controllers\Api\SiteSettingController::class, 'update']);
 });

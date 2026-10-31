@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { productsApi } from '../../api/client';
+import { productsApi, siteSettingsApi } from '../../api/client';
 import { Phone } from 'lucide-react';
 
 const WA_NUM      = import.meta.env.VITE_WA_NUMBER     || '918181816202';
@@ -28,6 +28,14 @@ export default function Home() {
     queryFn:  () => productsApi.publicList({ per_page: 12 }).then(r => r.data.data),
   });
 
+  const { data: settings = {} } = useQuery({
+    queryKey: ['public-site-settings'],
+    queryFn:  () => siteSettingsApi.publicGet().then(r => r.data),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const s = key => settings[key] ?? null;
+
   return (
     <>
       {/* ── Hero ── */}
@@ -42,16 +50,16 @@ export default function Home() {
           <div>
             <p className="text-xs tracking-widest uppercase text-[#1565C0] mb-4 font-medium">Designer Menswear · Made to Measure</p>
             <h1 className="font-display text-5xl md:text-7xl font-light leading-[1.05] text-[#0A1628] mb-6">
-              Dressed for<br/>
-              <em className="text-[#1565C0] not-italic">every<br/>occasion</em>
+              {s('hero_title') || 'Dressed for'}<br/>
+              <em className="text-[#1565C0] not-italic">{s('hero_title_accent') || 'every occasion'}</em>
             </h1>
             <p className="text-[#6B82A8] max-w-sm leading-relaxed mb-8">
-              Bespoke suits, sherwanis and occasion wear — crafted to your measurements and personality.
+              {s('hero_subtitle') || 'Bespoke suits, sherwanis and occasion wear — crafted to your measurements and personality.'}
             </p>
             <div className="flex gap-4 flex-wrap">
               <Link to="/collections"
                 className="bg-gradient-to-r from-[#1565C0] to-[#29ABE2] text-white px-7 py-3 text-xs font-medium tracking-widest uppercase hover:from-[#1976D2] hover:to-[#4FC3F7] transition-all shadow-md">
-                View Collections
+                {s('hero_cta') || 'View Collections'}
               </Link>
               <a href={`tel:+${TEL}`}
                 className="flex items-center gap-2 border border-[#D4E2F4] bg-white text-[#1565C0] px-5 py-3 text-xs tracking-widest uppercase hover:border-[#1565C0] transition-colors shadow-sm">
@@ -157,12 +165,12 @@ export default function Home() {
               </p>
             </div>
             <div>
-              <p className="text-xs tracking-widest uppercase text-[#1565C0] mb-6 font-medium">Our Process</p>
+              <p className="text-xs tracking-widest uppercase text-[#1565C0] mb-6 font-medium">{s('craft_tagline') || 'Our Process'}</p>
               <h2 className="font-display text-4xl font-light text-[#0A1628] mb-6">
-                Every garment<br/><em className="text-[#1565C0]">made for you</em>
+                {s('craft_title') || 'Every garment made for you'}
               </h2>
               <p className="text-[#6B82A8] leading-relaxed mb-8 max-w-prose">
-                We don't sell off the rack. Every piece is custom-fitted to your body and tailored to your occasion.
+                {s('craft_body') || "We don't sell off the rack. Every piece is custom-fitted to your body and tailored to your occasion."}
               </p>
               <div className="divide-y divide-[#D4E2F4]">
                 {[
@@ -214,10 +222,10 @@ export default function Home() {
       <section className="bg-gradient-to-r from-[#1565C0] to-[#29ABE2] py-20 text-center px-6">
         <p className="text-xs tracking-widest uppercase text-white/70 mb-4">Personal service, always</p>
         <h2 className="font-display text-4xl font-light text-white mb-4">
-          Ready for your<br/>perfect fit?
+          {s('cta_title') || 'Ready for your perfect fit?'}
         </h2>
         <p className="text-white/70 max-w-md mx-auto mb-8">
-          Send us a message on WhatsApp or call us directly. Tell us your occasion and style — we respond within hours.
+          {s('cta_body') || 'Send us a message on WhatsApp or call us directly. Tell us your occasion and style — we respond within hours.'}
         </p>
         <div className="flex justify-center gap-4 flex-wrap">
           <a href={waLink("Hello Grace New Designers! I'd like to discuss a custom outfit.")}

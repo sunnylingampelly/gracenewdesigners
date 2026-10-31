@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\AuditEvent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
@@ -22,7 +23,12 @@ class CategoryController extends Controller
             'sort_order'  => 'nullable|integer',
             'type'        => 'nullable|in:indian,western,accessories',
             'is_active'   => 'nullable|boolean',
+            'image'       => 'nullable|image|max:5120',
         ]);
+
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $request->file('image')->store('categories', 'public');
+        }
 
         $category = Category::create($data);
 
@@ -39,7 +45,15 @@ class CategoryController extends Controller
             'sort_order'  => 'nullable|integer',
             'type'        => 'nullable|in:indian,western,accessories',
             'is_active'   => 'nullable|boolean',
+            'image'       => 'nullable|image|max:5120',
         ]);
+
+        if ($request->hasFile('image')) {
+            if ($category->image_path) {
+                Storage::disk('public')->delete($category->image_path);
+            }
+            $data['image_path'] = $request->file('image')->store('categories', 'public');
+        }
 
         $category->update($data);
 
