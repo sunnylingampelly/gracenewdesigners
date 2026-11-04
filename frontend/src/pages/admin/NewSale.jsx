@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { salesApi, customersApi, productsApi } from '../../api/client';
 import { Plus, Trash2, ChevronDown, User, CreditCard, Banknote, Smartphone, CheckSquare } from 'lucide-react';
 import { format } from 'date-fns';
@@ -41,8 +41,6 @@ export default function NewSale() {
 
   // ── Bill meta ─────────────────────────────────────────────
   const [billDate]                      = useState(getISTDate()); // auto IST, not editable
-  const [notes,    setNotes]            = useState('');
-  const [discount, setDiscount]         = useState(0);
 
   // ── Items ─────────────────────────────────────────────────
   const [items,         setItems]       = useState([]);
@@ -53,7 +51,9 @@ export default function NewSale() {
   const [payMode,    setPayMode]        = useState('cash');
   const [paidAmount, setPaidAmount]     = useState('');
 
-  const [error, setError] = useState('');
+  const [error,       setError]       = useState('');
+  const [successBill, setSuccessBill] = useState(null);
+  const qc = useQueryClient();
 
   // ── Data queries ──────────────────────────────────────────
   const { data: customers = [] } = useQuery({
@@ -84,7 +84,7 @@ export default function NewSale() {
   }
 
   const subtotal = items.reduce((s, it) => s + calcLine(it), 0);
-  const total    = Math.max(0, subtotal - Number(discount));
+  const total    = subtotal;
   const balance  = total - Number(paidAmount || 0);
 
   // ── Item helpers ──────────────────────────────────────────
@@ -122,8 +122,11 @@ export default function NewSale() {
   // ── Submit ────────────────────────────────────────────────
   const createMutation = useMutation({
     mutationFn: data => salesApi.create(data),
-    onSuccess:  () => navigate('/admin/sales'),
-    onError:    err => setError(err.response?.data?.message || 'Failed to create bill.'),
+    onSuccess:  res  => {
+      qc.invalidateQueries({ queryKey: ['sales'] });
+      setSuccessBill(res.data?.bill_number ?? res.data?.id ?? '—');
+    },
+    onError:    err  => setError(err.response?.data?.message || 'Failed to create bill.'),
   });
 
   function handleSubmit(e) {
@@ -147,8 +150,6 @@ export default function NewSale() {
       walk_in_phone:   customerMode === 'new' ? `${countryCode}${custPhone.trim()}` : null,
       is_walk_in:      customerMode === 'new',
       bill_date:       billDate,
-      discount_amount: Number(discount),
-      notes,
       payment_mode:    payMode,
       amount_paid:     Number(paidAmount || 0),
       items: items.map(it => ({
@@ -165,6 +166,32 @@ export default function NewSale() {
 
   return (
     <div className="p-4 md:p-6 max-w-4xl pb-32">
+
+      {/* ── Success Modal ── */}
+      {successBill && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center space-y-5">
+            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
+              <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-[#0A1628] mb-2">Bill Created Successfully!</h2>
+              <p className="text-sm text-[#6B82A8]">
+                Your bill has been generated successfully and added to your bill history.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/admin/sales')}
+              className="w-full py-3 bg-[#1565C0] text-white rounded-xl font-medium hover:bg-[#1255A3] transition-colors"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
       <h1 className="text-xl font-semibold mb-6">New Sales Bill</h1>
 
       {error && (
@@ -338,30 +365,12 @@ export default function NewSale() {
           )}
         </div>
 
-        {/* ── Totals + Discount ── */}
-        <div className="card grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="space-y-3">
-            <div>
-              <label className="label">Bill Discount (₹)</label>
-              <input type="number" min={0} max={subtotal} className="input"
-                value={discount} onChange={e => setDiscount(e.target.value)} />
-            </div>
-            <div>
-              <label className="label">Notes</label>
-              <textarea className="input" rows={2} value={notes} onChange={e => setNotes(e.target.value)}
-                placeholder="Any special instructions…" />
-            </div>
-          </div>
-
-          <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+        {/* ── Totals ── */}
+        <div className="card">
+          <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm max-w-xs ml-auto">
             <div className="flex justify-between text-gray-500">
               <span>Subtotal</span><span>{fmt(subtotal)}</span>
             </div>
-            {Number(discount) > 0 && (
-              <div className="flex justify-between text-gray-500">
-                <span>Discount</span><span className="text-red-500">− {fmt(discount)}</span>
-              </div>
-            )}
             <div className="flex justify-between font-semibold text-base border-t border-gray-200 pt-2 mt-1">
               <span>Total</span><span>{fmt(total)}</span>
             </div>

@@ -140,3 +140,10 @@ export const rolesApi = {
   list:              ()           => client.get('/roles'),
   updatePermissions: (id, perms)  => client.put(`/roles/${id}`, { permissions: perms }),
 };
+
+export const modificationRequestsApi = {
+  list:    params         => client.get('/modification-requests', { params }),
+  forBill: billId         => client.get(`/sales/${billId}/modification-requests`),
+  create:  (billId, data) => client.post(`/sales/${billId}/modification-requests`, data),
+  update:  (id, data)     => client.put(`/modification-requests/${id}`, data),
+};

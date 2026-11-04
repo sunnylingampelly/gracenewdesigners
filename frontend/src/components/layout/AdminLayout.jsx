@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/authStore';
+import { modificationRequestsApi } from '../../api/client';
 import {
   LayoutDashboard, Package, Warehouse, ShoppingCart,
   Users, FileText, BarChart2, Shield, LogOut, Store,
@@ -34,6 +36,15 @@ export default function AdminLayout() {
   const { user, logout, hasPermission } = useAuthStore();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const isAdmin = user?.role === 'super_admin' || hasPermission('users');
+  const { data: pendingModsData } = useQuery({
+    queryKey: ['mod-requests-pending-count'],
+    queryFn:  () => modificationRequestsApi.list({ status: 'pending' }).then(r => r.data?.total ?? 0),
+    enabled:  isAdmin,
+    refetchInterval: 60000,
+  });
+  const pendingModCount = pendingModsData ?? 0;
 
   async function handleLogout() {
     await logout();
@@ -79,7 +90,12 @@ export default function AdminLayout() {
               )}
             >
               <Icon size={16} />
-              {label}
+              <span className="flex-1">{label}</span>
+              {to === '/admin/sales' && isAdmin && pendingModCount > 0 && (
+                <span className="bg-amber-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">
+                  {pendingModCount > 9 ? '9+' : pendingModCount}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>

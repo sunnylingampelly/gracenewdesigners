@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { salesApi, usersApi } from '../../api/client';
-import { Plus, Search, Eye, Download } from 'lucide-react';
+import { salesApi, usersApi, modificationRequestsApi } from '../../api/client';
+import { useAuthStore } from '../../store/authStore';
+import { Plus, Search, Eye, Download, AlertCircle } from 'lucide-react';
 import { StatusBadge } from './Dashboard';
 import { format } from 'date-fns';
 
@@ -29,6 +30,9 @@ const PRESETS = [
 ];
 
 export default function Sales() {
+  const { user, hasPermission } = useAuthStore();
+  const isAdmin = user?.role === 'super_admin' || hasPermission('users');
+
   const today = getIST();
   const [search,      setSearch]      = useState('');
   const [status,      setStatus]      = useState('');
@@ -48,6 +52,14 @@ export default function Sales() {
   const { data: users = [] } = useQuery({
     queryKey: ['users-list'],
     queryFn:  () => usersApi.list().then(r => r.data.data ?? r.data),
+    enabled:  isAdmin,
+  });
+
+  const { data: pendingMods } = useQuery({
+    queryKey: ['mod-requests-pending'],
+    queryFn:  () => modificationRequestsApi.list({ status: 'pending' }).then(r => r.data),
+    enabled:  isAdmin,
+    refetchInterval: 60000,
   });
 
   function applyPreset(p) {
@@ -75,7 +87,10 @@ export default function Sales() {
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-xl font-semibold">Sales Bills</h1>
+        <div>
+          <h1 className="text-xl font-semibold">{isAdmin ? 'Sales Bills' : 'My Bills'}</h1>
+          {!isAdmin && <p className="text-xs text-gray-400 mt-0.5">Showing your created bills only.</p>}
+        </div>
         <div className="flex gap-2">
           <button onClick={handleExport} className="btn-secondary flex items-center gap-2 text-xs">
             <Download size={13} /> Export CSV
@@ -85,6 +100,16 @@ export default function Sales() {
           </Link>
         </div>
       </div>
+
+      {/* Admin: pending modification requests notice */}
+      {isAdmin && pendingMods?.total > 0 && (
+        <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+          <AlertCircle size={16} className="text-amber-600 shrink-0" />
+          <p className="text-sm text-amber-800">
+            <span className="font-semibold">{pendingMods.total}</span> pending modification {pendingMods.total === 1 ? 'request' : 'requests'} — open the bill to review.
+          </p>
+        </div>
+      )}
 
       {/* Quick presets */}
       <div className="flex gap-2 flex-wrap">
@@ -125,10 +150,12 @@ export default function Sales() {
           <option value="">All modes</option>
           {MODES.map(m => <option key={m} value={m} className="capitalize">{m.charAt(0).toUpperCase()+m.slice(1)}</option>)}
         </select>
-        <select className="input w-36 text-sm" value={staffId} onChange={e => { setStaffId(e.target.value); setPage(1); }}>
-          <option value="">All staff</option>
-          {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-        </select>
+        {isAdmin && (
+          <select className="input w-36 text-sm" value={staffId} onChange={e => { setStaffId(e.target.value); setPage(1); }}>
+            <option value="">All staff</option>
+            {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+          </select>
+        )}
       </div>
 
       <div className="card p-0 overflow-hidden">

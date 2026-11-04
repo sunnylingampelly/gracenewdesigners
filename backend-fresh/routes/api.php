@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\LeadController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\PurchaseController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\BillModificationRequestController;
 use App\Http\Controllers\Api\SalesController;
 use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\Api\UserController;
@@ -70,6 +71,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('sales/{salesBill}/void',        [SalesController::class, 'void']);
     Route::post('sales/{salesBill}/payments',    [SalesController::class, 'addPayment']);
     Route::post('sales/{salesBill}/returns',     [\App\Http\Controllers\Api\ReturnController::class, 'store']);
+
+    // ── BILL MODIFICATION REQUESTS ───────────────────────────────────────────
+    Route::get('modification-requests',                           [BillModificationRequestController::class, 'index']);
+    Route::get('sales/{salesBill}/modification-requests',         [BillModificationRequestController::class, 'forBill']);
+    Route::post('sales/{salesBill}/modification-requests',        [BillModificationRequestController::class, 'store']);
+    Route::put('modification-requests/{modRequest}',              [BillModificationRequestController::class, 'update']);
 
     // ── REPORTS ──────────────────────────────────────────────────────────────
     Route::prefix('reports')->group(function () {

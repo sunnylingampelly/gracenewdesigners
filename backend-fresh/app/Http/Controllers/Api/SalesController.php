@@ -13,16 +13,31 @@ class SalesController extends Controller
 {
     public function __construct(private BillingService $billing) {}
 
+    private function isAdmin($user): bool {
+        return $user->role?->name === 'super_admin' ||
+               (is_array($user->role?->permissions) && in_array('users', $user->role->permissions));
+    }
+
     public function index(Request $request)
     {
+        $user    = $request->user();
+        $isAdmin = $this->isAdmin($user);
+
         $q = SalesBill::with(['customer', 'creator', 'lineItems.variant.product'])
             ->when($request->status, fn($q, $v) => $q->where('status', $v))
             ->when($request->customer_id, fn($q, $v) => $q->where('customer_id', $v))
-            ->when($request->created_by, fn($q, $v) => $q->where('created_by', $v))
             ->when($request->date_from, fn($q, $v) => $q->where('bill_date', '>=', $v))
             ->when($request->date_to, fn($q, $v) => $q->where('bill_date', '<=', $v))
             ->when($request->search, fn($q, $v) => $q->where('bill_number', 'like', "%$v%"))
             ->latest('bill_date');
+
+        // Staff auto-scope: only see their own bills
+        if (!$isAdmin) {
+            $q->where('created_by', $user->id);
+        } elseif ($request->created_by) {
+            // Admin can filter by specific staff member
+            $q->where('created_by', $request->created_by);
+        }
 
         return response()->json($q->paginate($request->per_page ?? 20));
     }
@@ -110,6 +125,9 @@ class SalesController extends Controller
 
     public function void(Request $request, SalesBill $salesBill)
     {
+        if (!$this->isAdmin($request->user())) {
+            return response()->json(['message' => 'Only administrators can void bills.'], 403);
+        }
         $request->validate(['reason' => 'required|string']);
         $this->billing->voidBill($salesBill, $request->reason);
         return response()->json(['message' => 'Bill voided.']);
