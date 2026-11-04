@@ -32,6 +32,12 @@ function RequireAuth({ children }) {
   return children;
 }
 
+function RequirePermission({ module, children }) {
+  const { hasPermission } = useAuthStore();
+  if (!hasPermission(module)) return <Navigate to="/admin" replace />;
+  return children;
+}
+
 export default function App() {
   const init = useAuthStore(s => s.init);
   useEffect(() => { init(); }, [init]);
@@ -50,18 +56,18 @@ export default function App() {
         <Route path="admin/login" element={<LoginPage />} />
         <Route path="admin" element={<RequireAuth><AdminLayout /></RequireAuth>}>
           <Route index             element={<Dashboard />} />
-          <Route path="products"   element={<Products />} />
-          <Route path="inventory"  element={<Inventory />} />
-          <Route path="purchases"  element={<Purchases />} />
-          <Route path="sales"      element={<Sales />} />
-          <Route path="sales/new"  element={<NewSale />} />
-          <Route path="sales/:id"  element={<SaleDetail />} />
-          <Route path="crm"        element={<CRM />} />
-          <Route path="reports"    element={<Reports />} />
-          <Route path="audit"      element={<AuditLog />} />
-          <Route path="users"       element={<Users />} />
-          <Route path="categories"   element={<Categories />} />
-          <Route path="site-content" element={<SiteContent />} />
+          <Route path="products"   element={<RequirePermission module="products"><Products /></RequirePermission>} />
+          <Route path="inventory"  element={<RequirePermission module="inventory"><Inventory /></RequirePermission>} />
+          <Route path="purchases"  element={<RequirePermission module="purchases"><Purchases /></RequirePermission>} />
+          <Route path="sales"      element={<RequirePermission module="sales"><Sales /></RequirePermission>} />
+          <Route path="sales/new"  element={<RequirePermission module="sales"><NewSale /></RequirePermission>} />
+          <Route path="sales/:id"  element={<RequirePermission module="sales"><SaleDetail /></RequirePermission>} />
+          <Route path="crm"        element={<RequirePermission module="crm"><CRM /></RequirePermission>} />
+          <Route path="reports"    element={<RequirePermission module="reports"><Reports /></RequirePermission>} />
+          <Route path="audit"      element={<RequirePermission module="audit"><AuditLog /></RequirePermission>} />
+          <Route path="users"       element={<RequirePermission module="users"><Users /></RequirePermission>} />
+          <Route path="categories"   element={<RequirePermission module="categories"><Categories /></RequirePermission>} />
+          <Route path="site-content" element={<RequirePermission module="site_content"><SiteContent /></RequirePermission>} />
         </Route>
       </Routes>
     </BrowserRouter>

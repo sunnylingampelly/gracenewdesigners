@@ -1,166 +1,275 @@
-import { useState, useRef } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { siteSettingsApi } from '../../api/client';
-import { Save, Upload, Eye } from 'lucide-react';
+import { Building, Phone, Image, Home, Package, Layout, Search, Settings, Upload, X, Check, AlertCircle } from 'lucide-react';
 
 const GROUPS = [
-  { key: 'hero',    label: 'Hero Section' },
-  { key: 'home',    label: 'Home Page'    },
-  { key: 'general', label: 'General'      },
+  { key: 'branding',    label: 'Branding',       icon: Building },
+  { key: 'contact',     label: 'Contact & Hours', icon: Phone    },
+  { key: 'hero',        label: 'Hero Section',    icon: Image    },
+  { key: 'home',        label: 'Homepage',        icon: Home     },
+  { key: 'collections', label: 'Collections',     icon: Package  },
+  { key: 'footer',      label: 'Footer',          icon: Layout   },
+  { key: 'seo',         label: 'SEO & Meta',      icon: Search   },
+  { key: 'general',     label: 'General',         icon: Settings },
 ];
 
-export default function SiteContent() {
-  const qc = useQueryClient();
-  const [activeGroup, setActiveGroup] = useState('hero');
-  const [localValues, setLocalValues] = useState({});
-  const [imageFiles,  setImageFiles]  = useState({});
-  const [imagePreviews, setImagePreviews] = useState({});
-  const [saved, setSaved] = useState(false);
-  const fileRefs = useRef({});
+function ImageField({ fieldKey, currentValue, draft, onFileChange, onClear }) {
+  const fileRef = useRef();
+  const previewSrc = draft instanceof File
+    ? URL.createObjectURL(draft)
+    : draft === '' || draft === 'DELETE'
+      ? null
+      : currentValue
+        ? `/storage/${currentValue}`
+        : null;
 
-  const { data: settings, isLoading } = useQuery({
-    queryKey: ['site-settings-admin'],
-    queryFn:  () => siteSettingsApi.get().then(r => r.data),
-    onSuccess: data => {
-      const vals = {};
-      Object.values(data).forEach(s => { vals[s.key] = s.value ?? ''; });
-      setLocalValues(vals);
-    },
+  return (
+    <div className="flex items-start gap-3 flex-wrap">
+      {previewSrc && (
+        <img
+          src={previewSrc}
+          alt="preview"
+          className="w-24 h-24 object-cover rounded-lg border border-[#D4E2F4]"
+        />
+      )}
+      {!previewSrc && (
+        <div className="w-24 h-24 rounded-lg border-2 border-dashed border-[#D4E2F4] flex items-center justify-center bg-[#F5F8FF]">
+          <Image size={20} className="text-[#6B82A8]" />
+        </div>
+      )}
+      <div className="flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          className="flex items-center gap-2 px-3 py-1.5 text-xs border border-[#D4E2F4] rounded-lg text-[#1565C0] hover:bg-[#F5F8FF] transition-colors"
+        >
+          <Upload size={13} /> Upload Image
+        </button>
+        {(previewSrc || currentValue) && (
+          <button
+            type="button"
+            onClick={onClear}
+            className="flex items-center gap-2 px-3 py-1.5 text-xs border border-red-200 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <X size={13} /> Remove
+          </button>
+        )}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={e => { if (e.target.files[0]) onFileChange(e.target.files[0]); }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function BooleanToggle({ value, onChange }) {
+  const isOn = value === '1' || value === true || value === 1;
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(isOn ? '0' : '1')}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+        isOn ? 'bg-[#1565C0]' : 'bg-[#D4E2F4]'
+      }`}
+    >
+      <span
+        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+          isOn ? 'translate-x-6' : 'translate-x-1'
+        }`}
+      />
+    </button>
+  );
+}
+
+export default function SiteContent() {
+  const [activeGroup, setActiveGroup] = useState('branding');
+  const [drafts, setDrafts] = useState({});
+  const [toast, setToast] = useState(null); // 'success' | 'error'
+  const qc = useQueryClient();
+
+  const { data: settings = [], isLoading } = useQuery({
+    queryKey: ['site-settings'],
+    queryFn:  () => siteSettingsApi.get().then(r => r.data.data ?? r.data),
   });
 
-  // merge server data into localValues on first load
-  const serverVals = {};
-  if (settings) Object.values(settings).forEach(s => { serverVals[s.key] = s.value ?? ''; });
-  const merged = { ...serverVals, ...localValues };
+  const settingsMap = useMemo(
+    () => Object.fromEntries(settings.map(s => [s.key, s])),
+    [settings]
+  );
 
-  const groupSettings = settings
-    ? Object.values(settings).filter(s => s.group === activeGroup)
-    : [];
+  const groupSettings = useMemo(
+    () => settings.filter(s => s.group === activeGroup),
+    [settings, activeGroup]
+  );
 
-  const mutation = useMutation({
+  const val = key => key in drafts ? drafts[key] : (settingsMap[key]?.value ?? '');
+
+  function setDraft(key, value) {
+    setDrafts(prev => ({ ...prev, [key]: value }));
+  }
+
+  const saveMutation = useMutation({
     mutationFn: () => {
       const fd = new FormData();
-      Object.entries(merged).forEach(([k, v]) => { if (v !== undefined && v !== null) fd.append(k, v); });
-      Object.entries(imageFiles).forEach(([k, f]) => { fd.append(k, f); });
+      for (const s of groupSettings) {
+        if (s.type === 'image') {
+          const draft = drafts[s.key];
+          if (draft instanceof File) {
+            fd.append(`settings[${s.key}]`, draft);
+          } else if (draft === '' || draft === 'DELETE') {
+            fd.append(`settings[${s.key}]`, '');
+          } else {
+            fd.append(`settings[${s.key}]`, s.value ?? '');
+          }
+        } else {
+          fd.append(`settings[${s.key}]`, val(s.key) ?? '');
+        }
+      }
       return siteSettingsApi.update(fd);
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['site-settings-admin'] });
-      setImageFiles({});
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
+      qc.invalidateQueries({ queryKey: ['site-settings'] });
+      // Clear only drafts for this group
+      setDrafts(prev => {
+        const next = { ...prev };
+        for (const s of groupSettings) delete next[s.key];
+        return next;
+      });
+      setToast('success');
+      setTimeout(() => setToast(null), 2500);
+    },
+    onError: () => {
+      setToast('error');
+      setTimeout(() => setToast(null), 3000);
     },
   });
 
-  function handleImageChange(key, e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    setImageFiles(p  => ({ ...p, [key]: file }));
-    setImagePreviews(p => ({ ...p, [key]: URL.createObjectURL(file) }));
-  }
-
-  if (isLoading) return <div className="p-8 text-gray-400">Loading…</div>;
+  const hasDrafts = groupSettings.some(s => s.key in drafts);
 
   return (
-    <div className="p-4 md:p-6 max-w-3xl">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+    <div className="p-4 md:p-6 space-y-4 max-w-3xl">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-semibold">Site Content</h1>
-          <p className="text-xs text-gray-400 mt-0.5">Edit text and images shown on the public website</p>
+          <h1 className="text-xl font-semibold text-[#0A1628]">Site Content</h1>
+          <p className="text-xs text-[#6B82A8] mt-0.5">
+            Control every piece of text and image shown on your website from here.
+          </p>
         </div>
-        <div className="flex gap-3">
-          <a href="/" target="_blank" rel="noopener"
-            className="btn-secondary flex items-center gap-2 text-xs">
-            <Eye size={14} /> Preview Site
-          </a>
-          <button onClick={() => mutation.mutate()} disabled={mutation.isPending}
-            className="btn-primary flex items-center gap-2">
-            <Save size={14} /> {mutation.isPending ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
-          </button>
-        </div>
+        {toast === 'success' && (
+          <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-lg">
+            <Check size={14} /> Saved successfully
+          </div>
+        )}
+        {toast === 'error' && (
+          <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg">
+            <AlertCircle size={14} /> Save failed — try again
+          </div>
+        )}
       </div>
 
-      {/* Group tabs */}
-      <div className="flex gap-1 mb-6 border-b border-gray-200 overflow-x-auto">
-        {GROUPS.map(g => (
-          <button key={g.key} onClick={() => setActiveGroup(g.key)}
-            className={`px-4 py-2 text-sm whitespace-nowrap transition-colors border-b-2 -mb-px ${
-              activeGroup === g.key
-                ? 'border-blue-600 text-blue-600 font-medium'
-                : 'border-transparent text-gray-500 hover:text-gray-800'
-            }`}>
-            {g.label}
-          </button>
-        ))}
+      {/* Group Tabs */}
+      <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+        {GROUPS.map(({ key, label, icon: Icon }) => {
+          const active = activeGroup === key;
+          return (
+            <button
+              key={key}
+              onClick={() => setActiveGroup(key)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                active
+                  ? 'bg-[#1565C0] text-white shadow-sm'
+                  : 'bg-white text-[#6B82A8] border border-[#D4E2F4] hover:bg-[#F5F8FF] hover:text-[#1565C0]'
+              }`}
+            >
+              <Icon size={13} />
+              {label}
+            </button>
+          );
+        })}
       </div>
 
-      <div className="space-y-5">
-        {groupSettings.map(setting => (
-          <div key={setting.key}>
-            <label className="label">{setting.label ?? setting.key}</label>
+      {/* Settings Panel */}
+      <div className="bg-white border border-[#D4E2F4] rounded-xl overflow-hidden">
+        {isLoading ? (
+          <div className="p-8 text-center text-[#6B82A8] text-sm">Loading settings…</div>
+        ) : (
+          <>
+            <div className="divide-y divide-[#D4E2F4]">
+              {groupSettings.map(s => (
+                <div key={s.key} className="px-5 py-4">
+                  <label className="block text-xs font-medium text-[#0A1628] mb-1.5">
+                    {s.label}
+                    <span className="ml-2 text-[#6B82A8] font-normal font-mono">{s.key}</span>
+                  </label>
 
-            {setting.type === 'image' ? (
-              <div>
-                <div
-                  onClick={() => {
-                    if (!fileRefs.current[setting.key]) fileRefs.current[setting.key] = document.createElement('input');
-                    const inp = fileRefs.current[setting.key];
-                    inp.type = 'file'; inp.accept = 'image/*';
-                    inp.onchange = e => handleImageChange(setting.key, e);
-                    inp.click();
-                  }}
-                  className="border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors overflow-hidden"
-                >
-                  {(imagePreviews[setting.key] || merged[setting.key]) ? (
-                    <div className="relative group">
-                      <img
-                        src={imagePreviews[setting.key] || `/storage/${merged[setting.key]}`}
-                        alt={setting.label}
-                        className="w-full h-48 object-cover"
+                  {s.type === 'text' && (
+                    <input
+                      type="text"
+                      value={val(s.key)}
+                      onChange={e => setDraft(s.key, e.target.value)}
+                      className="w-full border border-[#D4E2F4] rounded-lg px-3 py-2 text-sm text-[#0A1628] focus:outline-none focus:ring-2 focus:ring-[#29ABE2] focus:border-transparent bg-[#F5F8FF]"
+                      placeholder={s.label}
+                    />
+                  )}
+
+                  {s.type === 'textarea' && (
+                    <textarea
+                      rows={3}
+                      value={val(s.key)}
+                      onChange={e => setDraft(s.key, e.target.value)}
+                      className="w-full border border-[#D4E2F4] rounded-lg px-3 py-2 text-sm text-[#0A1628] focus:outline-none focus:ring-2 focus:ring-[#29ABE2] focus:border-transparent bg-[#F5F8FF] resize-y"
+                      placeholder={s.label}
+                    />
+                  )}
+
+                  {s.type === 'image' && (
+                    <ImageField
+                      fieldKey={s.key}
+                      currentValue={s.value}
+                      draft={drafts[s.key]}
+                      onFileChange={file => setDraft(s.key, file)}
+                      onClear={() => setDraft(s.key, '')}
+                    />
+                  )}
+
+                  {s.type === 'boolean' && (
+                    <div className="flex items-center gap-3">
+                      <BooleanToggle
+                        value={val(s.key)}
+                        onChange={v => setDraft(s.key, v)}
                       />
-                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <p className="text-white text-xs font-medium flex items-center gap-2"><Upload size={14}/> Click to change</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="h-32 flex flex-col items-center justify-center gap-2 text-gray-400">
-                      <Upload size={24} />
-                      <p className="text-xs">Click to upload image</p>
+                      <span className="text-sm text-[#6B82A8]">
+                        {val(s.key) === '1' ? 'Enabled' : 'Disabled'}
+                      </span>
                     </div>
                   )}
                 </div>
-                {merged[setting.key] && (
-                  <button
-                    onClick={() => { setLocalValues(p => ({ ...p, [setting.key]: '' })); setImagePreviews(p => ({ ...p, [setting.key]: null })); }}
-                    className="text-xs text-red-500 mt-1 hover:underline">Remove image</button>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 py-3 bg-[#F5F8FF] border-t border-[#D4E2F4] flex items-center justify-between gap-3 flex-wrap">
+              <p className="text-xs text-[#6B82A8]">
+                {hasDrafts ? 'You have unsaved changes in this section.' : 'No unsaved changes.'}
+              </p>
+              <button
+                onClick={() => saveMutation.mutate()}
+                disabled={saveMutation.isPending}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[#1565C0] text-white rounded-lg hover:bg-[#1255A3] disabled:opacity-60 transition-colors"
+              >
+                {saveMutation.isPending ? 'Saving…' : (
+                  <><Check size={14} /> Save Changes</>
                 )}
-              </div>
-            ) : setting.type === 'textarea' ? (
-              <textarea className="input" rows={3}
-                value={merged[setting.key] ?? ''}
-                onChange={e => setLocalValues(p => ({ ...p, [setting.key]: e.target.value }))}
-              />
-            ) : (
-              <input className="input"
-                value={merged[setting.key] ?? ''}
-                onChange={e => setLocalValues(p => ({ ...p, [setting.key]: e.target.value }))}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-
-      {groupSettings.length === 0 && (
-        <p className="text-gray-400 text-sm py-8 text-center">
-          No settings in this group yet. Run the database seeder to populate defaults.
-        </p>
-      )}
-
-      <div className="mt-8 pt-6 border-t border-gray-100">
-        <button onClick={() => mutation.mutate()} disabled={mutation.isPending}
-          className="btn-primary w-full flex items-center justify-center gap-2">
-          <Save size={14} /> {mutation.isPending ? 'Saving…' : 'Save All Changes'}
-        </button>
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

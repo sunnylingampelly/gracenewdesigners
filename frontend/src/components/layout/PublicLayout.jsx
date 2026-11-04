@@ -1,14 +1,8 @@
 import { Outlet, Link, NavLink, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { siteSettingsApi } from '../../api/client';
 import { Home, Grid3X3, Phone, Images } from 'lucide-react';
 
-const WA  = import.meta.env.VITE_WA_NUMBER  || '918181816202';
-const TEL = import.meta.env.VITE_PHONE      || '918181816202';
-const TEL_DISPLAY = import.meta.env.VITE_PHONE_DISPLAY || '+91 81818 16202';
-const WA_ENQUIRY  = `https://wa.me/${WA}?text=${encodeURIComponent("Hello Grace New Designers! I'd like to enquire about your collection.")}`;
-
-const ADDRESS = 'Raj Towers, B-1076, Gandhi Nagar Road, Opp. Captain Cook Restaurant, Beside Metro Pillar, Musheerabad, Bakaram, Kavadiguda, Hyderabad, Telangana 500020';
-
-/* Real WhatsApp brand SVG */
 function WaIcon({ size = 16, className = '' }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -20,32 +14,68 @@ function WaIcon({ size = 16, className = '' }) {
 export default function PublicLayout() {
   const { pathname } = useLocation();
 
+  const { data: settingsMap = {} } = useQuery({
+    queryKey: ['public-settings'],
+    queryFn:  () => siteSettingsApi.publicGet().then(r => r.data ?? {}),
+    staleTime: 60000,
+  });
+
+  const s = key => settingsMap[key] ?? '';
+
+  const brandName    = s('brand_name')           || 'Grace New Designers';
+  const brandTagline = s('brand_tagline')         || 'Designer Menswear · Made to Measure';
+  const phone        = s('contact_phone')         || '918181816202';
+  const phoneDsp     = s('contact_phone_display') || '+91 81818 16202';
+  const wa           = s('contact_whatsapp')      || '918181816202';
+  const address      = s('contact_address')       || 'Musheerabad, Hyderabad, Telangana';
+  const hours        = s('store_hours')           || 'Mon–Sat · 10am–7pm';
+  const copyright    = s('copyright_text')        || `© ${new Date().getFullYear()} Grace New Designers`;
+  const col2         = s('footer_col2_title')     || 'Collections';
+  const col3         = s('footer_col3_title')     || 'Services';
+  const col4         = s('footer_col4_title')     || 'Contact';
+  const footerAbout  = s('footer_tagline')        || brandTagline;
+  const services     = s('footer_services')
+    ? s('footer_services').split(',').map(x => x.trim()).filter(Boolean)
+    : ['Made to Measure', 'Bespoke Tailoring', 'Alterations', 'Occasion Wear'];
+  const announcement = s('announcement_text');
+
+  const waHref = `https://wa.me/${wa}?text=${encodeURIComponent("Hello Grace New Designers! I'd like to enquire about your collection.")}`;
+  const telHref = `tel:+${phone}`;
+
   return (
     <div className="min-h-screen bg-white text-[#0A1628] font-body">
 
+      {/* ── Announcement bar ── */}
+      {announcement && (
+        <div className="bg-[#1565C0] text-white text-xs text-center py-1.5 px-4 font-medium tracking-wide">
+          {announcement}
+        </div>
+      )}
+
       {/* ── Desktop / Tablet Nav ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 hidden md:flex items-center justify-between px-8 py-4
-                      bg-white/95 backdrop-blur-sm border-b border-[#D4E2F4] shadow-sm">
+                      bg-white/95 backdrop-blur-sm border-b border-[#D4E2F4] shadow-sm"
+           style={{ top: announcement ? '28px' : '0' }}>
         <Link to="/" className="flex items-center gap-3">
-          <img src="/logo.png" alt="GND" className="h-10 w-auto" />
-          <span className="font-display text-lg font-medium tracking-wide text-[#0A1628] hidden lg:block">Grace New Designers</span>
+          <img src="/logo.png" alt={brandName} className="h-10 w-auto" onError={e => { e.target.style.display = 'none'; }} />
+          <span className="font-display text-lg font-medium tracking-wide text-[#0A1628] hidden lg:block">{brandName}</span>
         </Link>
 
         <div className="flex items-center gap-8">
           <NavLink to="/collections" className={({ isActive }) =>
             `text-xs tracking-widest uppercase transition-colors ${isActive ? 'text-[#1565C0]' : 'text-[#6B82A8] hover:text-[#0A1628]'}`
-          }>Collections</NavLink>
+          }>{col2}</NavLink>
           <a href="/#gallery" className="text-xs tracking-widest uppercase text-[#6B82A8] hover:text-[#0A1628] transition-colors">Gallery</a>
           <a href="/#craft"   className="text-xs tracking-widest uppercase text-[#6B82A8] hover:text-[#0A1628] transition-colors">Our Craft</a>
         </div>
 
         <div className="flex items-center gap-4">
-          <a href={`tel:+${TEL}`}
+          <a href={telHref}
             className="flex items-center gap-2 text-sm text-[#6B82A8] hover:text-[#1565C0] transition-colors">
             <Phone size={14} />
-            <span className="hidden lg:inline">{TEL_DISPLAY}</span>
+            <span className="hidden lg:inline">{phoneDsp}</span>
           </a>
-          <a href={WA_ENQUIRY} target="_blank" rel="noopener"
+          <a href={waHref} target="_blank" rel="noopener"
             className="text-xs tracking-widest uppercase px-5 py-2.5
                        bg-gradient-to-r from-[#1565C0] to-[#29ABE2] text-white
                        hover:from-[#1976D2] hover:to-[#4FC3F7] transition-all shadow-sm">
@@ -56,21 +86,22 @@ export default function PublicLayout() {
 
       {/* ── Mobile Top Bar ── */}
       <div className="fixed top-0 left-0 right-0 z-50 flex md:hidden items-center justify-between px-4 py-3
-                      bg-white border-b border-[#D4E2F4] shadow-sm">
+                      bg-white border-b border-[#D4E2F4] shadow-sm"
+           style={{ top: announcement ? '28px' : '0' }}>
         <Link to="/" className="flex items-center gap-2">
-          <img src="/logo.png" alt="GND" className="h-8 w-auto" />
+          <img src="/logo.png" alt={brandName} className="h-8 w-auto" onError={e => { e.target.style.display = 'none'; }} />
           <span className="font-display text-sm font-medium text-[#0A1628] leading-tight">
             Grace New<br/><span className="text-[#1565C0]">Designers</span>
           </span>
         </Link>
-        <a href={`tel:+${TEL}`}
+        <a href={telHref}
           className="flex items-center gap-2 bg-[#EEF4FF] border border-[#D4E2F4] px-3 py-2 text-xs text-[#1565C0] font-medium">
           <Phone size={13} /> Call Us
         </a>
       </div>
 
-      {/* Page content — padded for mobile bottom nav */}
-      <div className="pb-20 md:pb-0">
+      {/* Page content — padded for nav + mobile bottom nav */}
+      <div className="pb-20 md:pb-0 pt-0 md:pt-[73px]" style={{ paddingTop: announcement ? undefined : undefined }}>
         <Outlet />
       </div>
 
@@ -79,13 +110,13 @@ export default function PublicLayout() {
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-10">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <img src="/logo.png" alt="GND" className="h-10 w-auto" />
-              <h3 className="font-display text-lg text-[#0A1628]">Grace New Designers</h3>
+              <img src="/logo.png" alt={brandName} className="h-10 w-auto" onError={e => { e.target.style.display = 'none'; }} />
+              <h3 className="font-display text-lg text-[#0A1628]">{brandName}</h3>
             </div>
-            <p className="text-sm text-[#6B82A8] leading-relaxed">Designer menswear for every occasion — custom-fitted, handcrafted, made for you.</p>
+            <p className="text-sm text-[#6B82A8] leading-relaxed">{footerAbout}</p>
           </div>
           <div>
-            <h4 className="text-xs uppercase tracking-widest text-[#1565C0] mb-4">Collections</h4>
+            <h4 className="text-xs uppercase tracking-widest text-[#1565C0] mb-4">{col2}</h4>
             <ul className="space-y-2 text-sm text-[#6B82A8]">
               <li><Link to="/collections" className="hover:text-[#0A1628] transition-colors">All Pieces</Link></li>
               <li><Link to="/collections?type=indian" className="hover:text-[#0A1628] transition-colors">Indian Wear</Link></li>
@@ -93,31 +124,29 @@ export default function PublicLayout() {
             </ul>
           </div>
           <div>
-            <h4 className="text-xs uppercase tracking-widest text-[#1565C0] mb-4">Services</h4>
+            <h4 className="text-xs uppercase tracking-widest text-[#1565C0] mb-4">{col3}</h4>
             <ul className="space-y-2 text-sm text-[#6B82A8]">
-              <li>Made to Measure</li>
-              <li>Bespoke Tailoring</li>
-              <li>Alterations</li>
+              {services.map(sv => <li key={sv}>{sv}</li>)}
             </ul>
           </div>
           <div>
-            <h4 className="text-xs uppercase tracking-widest text-[#1565C0] mb-4">Contact</h4>
+            <h4 className="text-xs uppercase tracking-widest text-[#1565C0] mb-4">{col4}</h4>
             <ul className="space-y-3 text-sm text-[#6B82A8]">
               <li className="flex items-start gap-2">
                 <Phone size={13} className="text-[#1565C0] mt-0.5 shrink-0" />
-                <a href={`tel:+${TEL}`} className="hover:text-[#0A1628] transition-colors">{TEL_DISPLAY}</a>
+                <a href={telHref} className="hover:text-[#0A1628] transition-colors">{phoneDsp}</a>
               </li>
               <li className="flex items-start gap-2">
                 <WaIcon size={13} className="text-[#25D366] mt-0.5 shrink-0" />
-                <a href={WA_ENQUIRY} target="_blank" rel="noopener" className="hover:text-[#0A1628] transition-colors">WhatsApp</a>
+                <a href={waHref} target="_blank" rel="noopener" className="hover:text-[#0A1628] transition-colors">WhatsApp</a>
               </li>
-              <li className="text-xs leading-relaxed">{ADDRESS}</li>
-              <li>Mon–Sat · 10am–7pm</li>
+              {address && <li className="text-xs leading-relaxed">{address}</li>}
+              {hours && <li>{hours}</li>}
             </ul>
           </div>
         </div>
         <div className="max-w-6xl mx-auto px-6 mt-10 pt-6 border-t border-[#D4E2F4] flex justify-between text-xs text-[#6B82A8]">
-          <span>© 2026 Grace New Designers</span>
+          <span>{copyright}</span>
           <Link to="/admin" className="hover:text-[#0A1628] transition-colors">Staff Login</Link>
         </div>
       </footer>
@@ -139,7 +168,7 @@ export default function PublicLayout() {
         </Link>
 
         {/* WhatsApp — featured center button */}
-        <a href={WA_ENQUIRY} target="_blank" rel="noopener"
+        <a href={waHref} target="_blank" rel="noopener"
           className="flex-1 flex flex-col items-center justify-center gap-1 py-2">
           <div className="w-12 h-12 rounded-full bg-[#25D366]
                           flex items-center justify-center shadow-lg shadow-[#25D366]/40 -mt-5">
@@ -153,7 +182,7 @@ export default function PublicLayout() {
           <span className="text-[10px] tracking-wide uppercase">Gallery</span>
         </a>
 
-        <a href={`tel:+${TEL}`} className="flex-1 flex flex-col items-center justify-center gap-1 py-3 text-[#9BB0CC] hover:text-[#6B82A8] transition-colors">
+        <a href={telHref} className="flex-1 flex flex-col items-center justify-center gap-1 py-3 text-[#9BB0CC] hover:text-[#6B82A8] transition-colors">
           <Phone size={20} strokeWidth={1.8} />
           <span className="text-[10px] tracking-wide uppercase">Call</span>
         </a>
@@ -161,19 +190,19 @@ export default function PublicLayout() {
 
       {/* Mobile footer */}
       <footer className="md:hidden border-t border-[#D4E2F4] py-10 bg-[#F5F8FF] text-center" id="contact">
-        <img src="/logo.png" alt="GND" className="h-12 w-auto mx-auto mb-3" />
-        <p className="font-display text-lg mb-1 text-[#0A1628]">Grace New Designers</p>
-        <p className="text-xs text-[#6B82A8] mb-2 px-6 leading-relaxed">{ADDRESS}</p>
-        <p className="text-xs text-[#6B82A8] mb-4">Mon–Sat 10am–7pm</p>
+        <img src="/logo.png" alt={brandName} className="h-12 w-auto mx-auto mb-3" onError={e => { e.target.style.display = 'none'; }} />
+        <p className="font-display text-lg mb-1 text-[#0A1628]">{brandName}</p>
+        {address && <p className="text-xs text-[#6B82A8] mb-2 px-6 leading-relaxed">{address}</p>}
+        {hours && <p className="text-xs text-[#6B82A8] mb-4">{hours}</p>}
         <div className="flex justify-center gap-3 flex-wrap px-4">
-          <a href={`tel:+${TEL}`} className="flex items-center gap-2 border border-[#D4E2F4] bg-white px-4 py-2 text-xs text-[#1565C0] font-medium">
-            <Phone size={13} /> {TEL_DISPLAY}
+          <a href={telHref} className="flex items-center gap-2 border border-[#D4E2F4] bg-white px-4 py-2 text-xs text-[#1565C0] font-medium">
+            <Phone size={13} /> {phoneDsp}
           </a>
-          <a href={WA_ENQUIRY} target="_blank" rel="noopener" className="flex items-center gap-2 bg-[#25D366] px-4 py-2 text-xs text-white font-medium">
+          <a href={waHref} target="_blank" rel="noopener" className="flex items-center gap-2 bg-[#25D366] px-4 py-2 text-xs text-white font-medium">
             <WaIcon size={13} /> WhatsApp
           </a>
         </div>
-        <p className="text-xs text-[#9BB0CC] mt-6">© 2026 Grace New Designers</p>
+        <p className="text-xs text-[#9BB0CC] mt-6">{copyright}</p>
       </footer>
     </div>
   );

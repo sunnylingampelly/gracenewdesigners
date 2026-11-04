@@ -12,7 +12,7 @@ const nav = [
   { to: '/admin',             label: 'Dashboard',   icon: LayoutDashboard, end: true, module: 'dashboard' },
   { to: '/admin/sales',       label: 'Sales',       icon: ShoppingCart,               module: 'sales' },
   { to: '/admin/crm',         label: 'CRM / Leads', icon: Users,                      module: 'crm' },
-  { to: '/admin/products',    label: 'Catalogue',   icon: Package,                    module: 'catalogue' },
+  { to: '/admin/products',    label: 'Catalogue',   icon: Package,                    module: 'products' },
   { to: '/admin/inventory',   label: 'Inventory',   icon: Warehouse,                  module: 'inventory' },
   { to: '/admin/purchases',   label: 'Purchases',   icon: ClipboardList,              module: 'purchases' },
   { to: '/admin/categories',  label: 'Categories',  icon: Store,                      module: 'categories' },
@@ -26,7 +26,7 @@ const nav = [
 const bottomNav = [
   { to: '/admin',           label: 'Home',      icon: LayoutDashboard, end: true, module: 'dashboard' },
   { to: '/admin/sales',     label: 'Sales',     icon: ShoppingCart,               module: 'sales' },
-  { to: '/admin/products',  label: 'Catalogue', icon: Package,                    module: 'catalogue' },
+  { to: '/admin/products',  label: 'Catalogue', icon: Package,                    module: 'products' },
   { to: '/admin/crm',       label: 'CRM',       icon: Users,                      module: 'crm' },
 ];
 

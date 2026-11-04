@@ -8,7 +8,7 @@ const MODULES = [
   { key: 'dashboard',    label: 'Dashboard' },
   { key: 'sales',        label: 'Sales' },
   { key: 'crm',          label: 'CRM / Leads' },
-  { key: 'catalogue',    label: 'Catalogue' },
+  { key: 'products',     label: 'Catalogue / Products' },
   { key: 'inventory',    label: 'Inventory' },
   { key: 'purchases',    label: 'Purchases' },
   { key: 'categories',   label: 'Categories' },
