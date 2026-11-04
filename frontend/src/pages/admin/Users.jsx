@@ -9,7 +9,6 @@ const MODULES = [
   { key: 'sales',        label: 'Sales' },
   { key: 'crm',          label: 'CRM / Leads' },
   { key: 'products',     label: 'Catalogue / Products' },
-  { key: 'inventory',    label: 'Inventory' },
   { key: 'purchases',    label: 'Purchases' },
   { key: 'categories',   label: 'Categories' },
   { key: 'site_content', label: 'Site Content' },

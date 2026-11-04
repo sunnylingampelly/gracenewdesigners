@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\DB;
 
 class BillingService
 {
-    public function __construct(private InventoryService $inventory) {}
+    // No inventory tracking — catalog items have infinite availability
+    public function __construct() {}
 
     public function generateBillNumber(): string
     {
@@ -32,7 +33,7 @@ class BillingService
         DB::transaction(function () use ($bill) {
             $bill->recalculateTotals();
             $bill->update(['status' => 'posted', 'posted_at' => now()]);
-            $this->inventory->deductForSale($bill);
+            // Inventory deduction removed — catalog items have infinite availability
             $this->updatePaymentStatus($bill);
             AuditEvent::log('sale', 'bill_posted', $bill);
         });
@@ -71,12 +72,7 @@ class BillingService
 
         DB::transaction(function () use ($bill, $reason) {
             $before = $bill->toArray();
-            // Reverse stock if already posted
-            if ($bill->status !== 'draft') {
-                foreach ($bill->lineItems as $item) {
-                    $this->inventory->move($item->variant, 'return', $item->quantity, $bill, "Void: $reason");
-                }
-            }
+            // No inventory reversal — catalog has infinite availability
             $bill->update(['status' => 'void']);
             AuditEvent::log('sale', 'bill_voided', $bill, ['before' => $before, 'reason' => $reason]);
         });

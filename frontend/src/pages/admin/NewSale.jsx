@@ -71,8 +71,9 @@ export default function NewSale() {
     [allProducts, selectedProd]
   );
 
+  // All variants available — no stock limits, catalog has infinite availability
   const availableVariants = useMemo(
-    () => (selectedProduct?.variants ?? []).filter(v => (v.qty_on_hand - v.qty_reserved) > 0),
+    () => selectedProduct?.variants ?? [],
     [selectedProduct]
   );
 
@@ -104,7 +105,6 @@ export default function NewSale() {
       quantity:         1,
       unit_price:       variant.selling_price ?? 0,
       discount_percent: 0,
-      available_qty:    variant.qty_on_hand - variant.qty_reserved,
     }]);
     setSelectedProd('');
     setSelectedVar('');
@@ -269,8 +269,8 @@ export default function NewSale() {
                   onChange={e => { setSelectedProd(e.target.value); setSelectedVar(''); }}>
                   <option value="">— Select product —</option>
                   {allProducts.map(p => (
-                    <option key={p.id} value={p.id} disabled={!p.variants?.some(v => v.qty_on_hand - v.qty_reserved > 0)}>
-                      {p.name} {!p.variants?.some(v => v.qty_on_hand - v.qty_reserved > 0) ? '(out of stock)' : ''}
+                    <option key={p.id} value={p.id}>
+                      {p.name}
                     </option>
                   ))}
                 </select>
@@ -288,7 +288,7 @@ export default function NewSale() {
                     <option value="">— Select variant —</option>
                     {availableVariants.map(v => (
                       <option key={v.id} value={v.id}>
-                        {[v.size, v.color].filter(Boolean).join(' / ')} · Avail: {v.qty_on_hand - v.qty_reserved}
+                        {[v.size, v.color].filter(Boolean).join(' / ') || 'Default'}
                       </option>
                     ))}
                   </select>
@@ -324,13 +324,12 @@ export default function NewSale() {
                       <td className="py-2.5">
                         <p className="font-medium text-gray-900">{it.product_name}</p>
                         <p className="text-xs text-gray-400">{it.sku}{it.size ? ` · ${it.size}` : ''}{it.color ? ` · ${it.color}` : ''}</p>
-                        <p className="text-xs text-gray-300">Available: {it.available_qty}</p>
                       </td>
                       <td className="py-2.5 text-center">
-                        <input type="number" min={1} max={it.available_qty}
+                        <input type="number" min={1}
                           className="input w-16 text-center py-1.5 text-sm"
                           value={it.quantity}
-                          onChange={e => updateItem(idx, 'quantity', Math.min(Number(e.target.value), it.available_qty))} />
+                          onChange={e => updateItem(idx, 'quantity', Math.max(1, Number(e.target.value)))} />
                       </td>
                       <td className="py-2.5">
                         <input type="number" min={0} step="0.01"

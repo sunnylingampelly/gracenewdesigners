@@ -13,7 +13,6 @@ import AdminLayout  from './components/layout/AdminLayout';
 import LoginPage    from './pages/admin/Login';
 import Dashboard    from './pages/admin/Dashboard';
 import Products     from './pages/admin/Products';
-import Inventory    from './pages/admin/Inventory';
 import Purchases    from './pages/admin/Purchases';
 import Sales        from './pages/admin/Sales';
 import NewSale      from './pages/admin/NewSale';
@@ -57,7 +56,6 @@ export default function App() {
         <Route path="admin" element={<RequireAuth><AdminLayout /></RequireAuth>}>
           <Route index             element={<Dashboard />} />
           <Route path="products"   element={<RequirePermission module="products"><Products /></RequirePermission>} />
-          <Route path="inventory"  element={<RequirePermission module="inventory"><Inventory /></RequirePermission>} />
           <Route path="purchases"  element={<RequirePermission module="purchases"><Purchases /></RequirePermission>} />
           <Route path="sales"      element={<RequirePermission module="sales"><Sales /></RequirePermission>} />
           <Route path="sales/new"  element={<RequirePermission module="sales"><NewSale /></RequirePermission>} />

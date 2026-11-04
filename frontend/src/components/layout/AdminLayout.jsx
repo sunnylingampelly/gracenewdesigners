@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/authStore';
 import { modificationRequestsApi } from '../../api/client';
 import {
-  LayoutDashboard, Package, Warehouse, ShoppingCart,
+  LayoutDashboard, Package, ShoppingCart,
   Users, FileText, BarChart2, Shield, LogOut, Store,
   ClipboardList, Menu, X, Globe,
 } from 'lucide-react';
@@ -15,7 +15,6 @@ const nav = [
   { to: '/admin/sales',       label: 'Sales',       icon: ShoppingCart,               module: 'sales' },
   { to: '/admin/crm',         label: 'CRM / Leads', icon: Users,                      module: 'crm' },
   { to: '/admin/products',    label: 'Catalogue',   icon: Package,                    module: 'products' },
-  { to: '/admin/inventory',   label: 'Inventory',   icon: Warehouse,                  module: 'inventory' },
   { to: '/admin/purchases',   label: 'Purchases',   icon: ClipboardList,              module: 'purchases' },
   { to: '/admin/categories',  label: 'Categories',  icon: Store,                      module: 'categories' },
   { to: '/admin/site-content',label: 'Site Content',icon: Globe,                      module: 'site_content' },
